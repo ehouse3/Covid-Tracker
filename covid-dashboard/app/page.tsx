@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { BarChart } from '@mui/x-charts/BarChart';
 
 export default function Home() {
   return (
