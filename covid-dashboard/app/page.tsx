@@ -17,7 +17,7 @@ export default function Dashboard() {
     return (
       <div key={state.id} className="flex flex-row justify-between">
         <li>{state.abbrev} {state.id}</li>
-        <button onClick={(event) => {removeState(state.id)}}>test</button>
+        <button onClick={(event) => {removeState(state.id)}}>Remove</button>
       </div>
     );
   }
