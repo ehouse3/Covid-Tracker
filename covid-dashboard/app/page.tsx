@@ -7,17 +7,22 @@ export default function Dashboard() {
   const nextId = useRef(0);
   interface state {
     id: number | null,
-    abbrev: string,
-    expanded: boolean
+    abbrev: string
   }
 
   const [states, setStates] = useState<state[]>([]);
 
   function renderState(state:state, i:number) {
     return (
-      <div key={state.id} className="flex flex-row justify-between">
-        <li>{state.abbrev} {state.id}</li>
-        <button onClick={(event) => {removeState(state.id)}}>Remove</button>
+      <div key={state.id} className="flex flex-row justify-between flex-wrap border-4 border-sky-700 bg-sky-800 rounded-xl mx-5 my-5">
+        <h2 className="basis-3/4">{state.abbrev}</h2>
+        <button className="px-3 m-1 border-2 rounded-md border-sky-500 bg-sky-700 hover:bg-blue-600 hover:border-blue-500" >up</button>
+        <button className="px-3 m-1 border-2 rounded-md border-sky-500 bg-sky-700 hover:bg-blue-600 hover:border-blue-500" >down</button>
+        <button className="px-3 m-1 border-2 rounded-md border-sky-500 bg-sky-700 hover:bg-blue-600 hover:border-blue-500" 
+          onClick={(event) => {removeState(state.id)}}>Remove</button>
+        <div className="basis-full">
+          Graph
+        </div>
       </div>
     );
   }
@@ -36,14 +41,19 @@ export default function Dashboard() {
     setStates(states.filter(s => s.id !== id));
   }
 
+  function swapState(a:state, b:state) {
+    ;
+  }
+
   return (
-    <main className="flex flex-row flex-wrap items-center mx-25 my-10 border-2">
+    <main className="flex flex-row flex-wrap items-center mx-10 my-10 bg-sky-900 text-2xl font-mono font-medium tracking-normal">
       <div className="flex flex-row basis-full justify-between border-2">
         <div></div>
-        <h1>Header</h1>
+        <h1 className="text-4xl font-bold">Covid Tracking Dashboard</h1>
         <div>
           <button
-            onClick={(event) => {addState({id:null ,abbrev:"CA", expanded:false});}}
+            className="px-3 m-1 border-2 rounded-md border-sky-500 bg-sky-700 hover:bg-blue-600 hover:border-blue-500"
+            onClick={(event) => {addState({id:null, abbrev:"CA"});}}
           >
             Add state
           </button>
