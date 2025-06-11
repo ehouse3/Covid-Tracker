@@ -2,6 +2,8 @@
 import Image from "next/image";
 import { BarChart } from '@mui/x-charts/BarChart';
 import { useState, useRef } from 'react';
+import { LineChart } from "@mui/x-charts";
+import { foo } from "../parser.js";
 
 export default function Dashboard() {
   const nextId = useRef(0);
@@ -22,8 +24,17 @@ export default function Dashboard() {
           onClick={(event) => {descendState(state)}} >down</button>
         <button className="px-3 m-1 border-2 rounded-md border-sky-500 bg-sky-700 hover:bg-blue-600 hover:border-blue-500" 
           onClick={(event) => {removeState(state.id)}}>Remove</button>
+        
         <div className="basis-full p-2">
-          Graph
+          <LineChart
+            xAxis={[{ data: [1, 2, 3, 5, 8, 10] }]}
+            series={[
+              {
+                data: [2, 5.5, 2, 8.5, 1.5, 5],
+              },
+            ]}
+            height={300}
+          />
         </div>
       </div>
     );
