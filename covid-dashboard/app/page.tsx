@@ -3,10 +3,10 @@ import Image from "next/image";
 import { BarChart } from '@mui/x-charts/BarChart';
 import { useState, useRef } from 'react';
 import { LineChart } from "@mui/x-charts";
-import { foo } from "../parser.js";
+import /*{ foo } from*/ "../parser.js";
 
 export default function Dashboard() {
-  const nextId = useRef(0);
+  const nextId = useRef(0); 
   interface state {
     id: number | null,
     abbrev: string
