@@ -1,30 +1,34 @@
 'use client';
-import Image from "next/image";
-import { BarChart } from '@mui/x-charts/BarChart';
+// import Image from "next/image";
+// import { BarChart } from '@mui/x-charts/BarChart';
 import { useState, useRef } from 'react';
 import { LineChart } from "@mui/x-charts";
-import /*{ foo } from*/ "../parser.js";
+import "../parser.js";
 
 export default function Dashboard() {
   const nextId = useRef(0); 
   interface state {
-    id: number | null,
+    id: number | undefined,
     abbrev: string
   }
 
   const [states, setStates] = useState<state[]>([]);
 
-  function renderState(state:state, i:number) {
+  /** StateItem Component that displays a single state. Includes title, movement buttons and graph */
+  function StateItem(
+    { state, ascendState, descendState, removeState }: 
+    { state: state, 
+      ascendState: (s:state) => void, 
+      descendState: (s:state) => void, 
+      removeState: (s:state) => void }) 
+      {
     return (
       <div key={state.id} className="flex flex-row justify-between flex-wrap border-4 border-sky-700 bg-sky-800 rounded-xl mx-5 my-5">
         <h2 className="basis-3/4">{state.abbrev} {state.id}</h2>
-        <button className="px-3 m-1 border-2 rounded-md border-sky-500 bg-sky-700 hover:bg-blue-600 hover:border-blue-500"
-          onClick={(event) => {ascendState(state)}} >up</button>
-        <button className="px-3 m-1 border-2 rounded-md border-sky-500 bg-sky-700 hover:bg-blue-600 hover:border-blue-500" 
-          onClick={(event) => {descendState(state)}} >down</button>
-        <button className="px-3 m-1 border-2 rounded-md border-sky-500 bg-sky-700 hover:bg-blue-600 hover:border-blue-500" 
-          onClick={(event) => {removeState(state.id)}}>Remove</button>
-        
+        <StateButton callBack={ascendState} s={state} innerHTML='up'/>
+        <StateButton callBack={descendState} s={state} innerHTML='down'/>
+        <StateButton callBack={removeState} s={state} innerHTML='Remove'/>
+
         <div className="basis-full p-2">
           <LineChart
             xAxis={[{ data: [1, 2, 3, 5, 8, 10] }]}
@@ -37,25 +41,35 @@ export default function Dashboard() {
           />
         </div>
       </div>
-    );
+    )
+  }
+
+  /** StateButton Component that displays a button with callback function for press. */
+  function StateButton(
+    { callBack, s ,innerHTML}: 
+    { callBack:(state: state) => void, s:state, innerHTML: string }) {
+    return (
+      <button className="px-3 m-1 border-2 rounded-md border-sky-500 bg-sky-700 hover:bg-blue-600 hover:border-blue-500"
+        onClick={() => { callBack(s) }} >{innerHTML}</button>
+    )
   }
 
   //https://react.dev/reference/react/useState 
-  // Addes state to active state list
-  // Sets state Id
+  /** Adds state to active state list w/ unique id */
   function addState(newState:state) {
     if(states.length >= 5) { return; }
 
     setStates([...states, { ...newState, id: nextId.current++ }]);
   }
 
-  // Removes active state from state list
-  function removeState(id:number | null) {
-    setStates(states.filter(s => s.id !== id));
+  /** Removes active state from state list */
+  function removeState(s:state) {
+    setStates(states.filter(st => st.id !== s.id));
   }
 
+  /** Moves displayed state up one position */
   function ascendState(s:state) {
-    let index = states.findIndex(st => st.id === s.id);
+    const index = states.findIndex(st => st.id === s.id);
     if (index !== 0) {
       const newStates = [...states];
       const temp:state = newStates[index];
@@ -65,9 +79,10 @@ export default function Dashboard() {
     }
   }
 
+  /** Moves displayed state down one position */
   function descendState(s:state) {
-    let index = states.findIndex(st => st.id === s.id);
-    if (index !== states.length) {
+    const index = states.findIndex(st => st.id === s.id);
+    if (index < states.length - 1) {
       const newStates = [...states];
       const temp:state = newStates[index];
       newStates[index] = newStates[index + 1];
@@ -84,7 +99,7 @@ export default function Dashboard() {
         <div>
           <button
             className="px-3 m-1 border-2 rounded-md border-sky-500 bg-sky-700 hover:bg-blue-600 hover:border-blue-500"
-            onClick={(event) => {addState({id:null, abbrev:"ST"});}}
+            onClick={() => {addState({id:undefined, abbrev:"ST"});}}
           >
             Add state
           </button>
@@ -92,7 +107,7 @@ export default function Dashboard() {
       </div>
       <div className="basis-full border-2"> item Section
         <div>
-          {states.map((state, i) => renderState(state, i))}
+          {states.map((state) => state.id !== undefined && <StateItem key={state.id} state={state} ascendState={ascendState} descendState={descendState} removeState={removeState} />)}
         </div>
       </div>
     </main>
