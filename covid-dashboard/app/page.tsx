@@ -91,18 +91,38 @@ export default function Dashboard() {
     }
   }
 
+  const acceptStates = [
+  "AK", "AL", "AR", "AS", "AZ", "CA", "CO", "CT", "DC", "DE",
+  "FL", "GA", "GU", "HI", "IA", "ID", "IL", "IN", "KS", "KY",
+  "LA", "MA", "MD", "ME", "MI", "MN", "MO", "MP", "MS", "MT",
+  "NC", "ND", "NE", "NH", "NJ", "NM", "NV", "NY", "OH", "OK",
+  "OR", "PA", "PR", "RI", "SC", "SD", "TN", "TX", "UT", "VA",
+  "VI", "VT", "WA", "WI", "WV", "WY" ];
+  function handleSubmit(e:React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const stateAbbrev = (formData.get("stateAbbrev") as string).toUpperCase();
+
+    if(acceptStates.includes(stateAbbrev)) {
+      addState({ id: undefined, abbrev: stateAbbrev });
+    }
+  }
+
   return (
     <main className="flex flex-row flex-wrap items-center mx-10 my-10 bg-sky-900 text-2xl font-mono font-medium tracking-normal">
       <div className="flex flex-row basis-full justify-between border-2">
         <div></div>
         <h1 className="text-4xl font-bold">Covid Tracking Dashboard</h1>
         <div>
-          <button
-            className="px-3 m-1 border-2 rounded-md border-sky-500 bg-sky-700 hover:bg-blue-600 hover:border-blue-500"
-            onClick={() => {addState({id:undefined, abbrev:"ST"});}}
-          >
-            Add state
-          </button>
+          <form onSubmit={handleSubmit}>
+            <input
+              name='stateAbbrev'
+              className="px-2 m-1 rounded-md text-neutral-900 bg-sky-50"
+              type="text" placeholder="e.g. NY" autoCapitalize="characters" />
+            <button
+              className="px-2 m-1 border-2 rounded-md border-sky-500 bg-sky-700 hover:bg-blue-600 hover:border-blue-500" 
+              type="submit">Add State</button>
+          </form>
         </div>
       </div>
       <div className="basis-full border-2"> item Section
