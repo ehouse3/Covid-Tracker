@@ -3,7 +3,7 @@
 // import { BarChart } from '@mui/x-charts/BarChart';
 import { useState, useRef } from 'react';
 import { LineChart } from "@mui/x-charts";
-import "../parser.js";
+import { fetchState } from "../parser.js";
 
 export default function Dashboard() {
   const nextId = useRef(0); 
@@ -59,6 +59,8 @@ export default function Dashboard() {
   function addState(newState:state) {
     if(states.length >= 5) { return; }
 
+    fetchState(newState.abbrev);
+
     setStates([...states, { ...newState, id: nextId.current++ }]);
   }
 
@@ -98,6 +100,7 @@ export default function Dashboard() {
   "NC", "ND", "NE", "NH", "NJ", "NM", "NV", "NY", "OH", "OK",
   "OR", "PA", "PR", "RI", "SC", "SD", "TN", "TX", "UT", "VA",
   "VI", "VT", "WA", "WI", "WV", "WY" ];
+  /** Handles submit event, calling addState if appropriate */
   function handleSubmit(e:React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -125,7 +128,7 @@ export default function Dashboard() {
           </form>
         </div>
       </div>
-      <div className="basis-full border-2"> item Section
+      <div className="basis-full border-2"> Tracked States
         <div>
           {states.map((state) => state.id !== undefined && <StateItem key={state.id} state={state} ascendState={ascendState} descendState={descendState} removeState={removeState} />)}
         </div>
