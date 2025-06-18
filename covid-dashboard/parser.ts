@@ -44,6 +44,7 @@ interface datum {
     totalTestsViralIncrease:number|null
 }
 
+/** Returns an datum array of requested state */
 export function fetchState(state:string) {
     fetch('data/all-states-history.csv')
         .then(response => response.text())
@@ -51,40 +52,31 @@ export function fetchState(state:string) {
             Papa.parse(csvText, {
                 header: true,
                 complete: function(results:Papa.ParseResult<datum>) {
-                    results.data.forEach((datum) => {
-                        if(datum.state == state) {
-                            datum = nullifyEmptyValues(datum);
+                    const cleanedData:datum[] = [];
+                    // keeps requested state values, nullyfing while it itterates
+                    for(let i = 0; i < results.data.length; i++) { 
+                        if(results.data[i].state === state) {
+                            const datum:datum = nullifyEmptyValues(results.data[i]);
+                            cleanedData.push(datum);
                         }
-                    });
+                    }
                     
+                    return cleanedData;
                 },
             });
         }
     )
 }
 
-/** Modifies each empty string property of datum to null, leaving non-empty values */
+/** Returns datum, with empty string properties replaced with null */
 function nullifyEmptyValues(datum:datum) {
-    // const fixedDatum = Object.values(datum).map((value) => {
-    //     if(value === "") {
-    //         return null;
-    //     } 
-    //     return value;
-    // })
-    // 
-    // //manually convert each property explicitly from an array back to interface? 
-    // return fixedDatum as datum;
-
     const fixedDatum:datum = { ...datum };
     for (const k in fixedDatum) {
-        const key = k as keyof datum; //cast to datum property type
-
+        const key = k as keyof datum; // allows indexing
         if (fixedDatum[key] === "") {
-            (fixedDatum[key] as unknown) = null; //there HAS to be a better way.
+            (fixedDatum[key] as unknown) = null; // there HAS to be a better way to not use unknown type.
         }
     }
+
     return fixedDatum;
 }
-
-
-

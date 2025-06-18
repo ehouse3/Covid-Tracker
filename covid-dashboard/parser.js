@@ -13,6 +13,7 @@ var __assign = (this && this.__assign) || function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fetchState = fetchState;
 var Papa = require("papaparse");
+/** Returns an datum array of requested state */
 function fetchState(state) {
     fetch('data/all-states-history.csv')
         .then(function (response) { return response.text(); })
@@ -20,34 +21,27 @@ function fetchState(state) {
         Papa.parse(csvText, {
             header: true,
             complete: function (results) {
-                results.data.forEach(function (datum) {
-                    if (datum.state == state) {
-                        console.log(datum);
-                        nullifyEmptyValues(datum);
+                var cleanedData = [];
+                // keeps requested state values, nullyfing while it itterates
+                for (var i = 0; i < results.data.length; i++) {
+                    if (results.data[i].state === state) {
+                        var datum = nullifyEmptyValues(results.data[i]);
+                        cleanedData.push(datum);
                     }
-                });
+                }
+                return cleanedData;
             },
         });
     });
 }
-/** Modifies each empty string property of datum to null, leaving non-empty values */
+/** Modifies each empty string property of a datum to null, leaving non-empty values */
 function nullifyEmptyValues(datum) {
-    // const fixedDatum = Object.values(datum).map((value) => {
-    //     if(value == "") {
-    //         return null;
-    //     } 
-    //     return value;
-    // })
-    // 
-    // //manually convert each property explicitly from an array back to interface? 
-    // return fixedDatum as datum;
     var fixedDatum = __assign({}, datum);
     for (var k in fixedDatum) {
-        var key = k;
+        var key = k; //cast to datum property type
         if (fixedDatum[key] === "") {
-            fixedDatum[key] = null; //there HAS to be a better way
+            fixedDatum[key] = null; //there HAS to be a better way to not use unknown.
         }
     }
-    console.log("type of date", typeof (fixedDatum.date), " type of death", typeof (fixedDatum.death));
     return fixedDatum;
 }
