@@ -3,7 +3,7 @@
 // import { BarChart } from '@mui/x-charts/BarChart';
 import { useState, useRef } from 'react';
 import { LineChart } from "@mui/x-charts";
-import { fetchState } from "../parser.js";
+import { datum ,fetchState } from "../parser.js";
 
 export default function Dashboard() {
   const nextId = useRef(0); 
@@ -56,10 +56,12 @@ export default function Dashboard() {
 
   //https://react.dev/reference/react/useState 
   /** Adds state to active state list w/ unique id */
-  function addState(newState:state) {
+  async function addState(newState:state) {
     if(states.length >= 5) { return; }
 
-    fetchState(newState.abbrev);
+    const stateData:datum[] = await fetchState(newState.abbrev);
+    console.log("page.tsx fetch state return",stateData); 
+    
 
     setStates([...states, { ...newState, id: nextId.current++ }]);
   }

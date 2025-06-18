@@ -1,6 +1,6 @@
 import * as Papa from 'papaparse';
 
-interface datum {
+export interface datum {
     date:string|null,
     state:string|null, 
     death:number|null, 
@@ -45,14 +45,14 @@ interface datum {
 }
 
 /** Returns an datum array of requested state */
-export function fetchState(state:string) {
-    fetch('data/all-states-history.csv')
+export async function fetchState(state:string) {
+    const cleanedData:datum[] = [];
+    await fetch('data/all-states-history.csv')
         .then(response => response.text())
         .then(csvText => {
             Papa.parse(csvText, {
                 header: true,
                 complete: function(results:Papa.ParseResult<datum>) {
-                    const cleanedData:datum[] = [];
                     // keeps requested state values, nullyfing while it itterates
                     for(let i = 0; i < results.data.length; i++) { 
                         if(results.data[i].state === state) {
@@ -60,12 +60,13 @@ export function fetchState(state:string) {
                             cleanedData.push(datum);
                         }
                     }
-                    
-                    return cleanedData;
                 },
             });
         }
     )
+    return cleanedData; 
+
+
 }
 
 /** Returns datum, with empty string properties replaced with null */
