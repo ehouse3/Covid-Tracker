@@ -2,7 +2,7 @@
 import { useState, useRef } from 'react';
 import { LineChart } from "@mui/x-charts";
 import { datum ,fetchState } from "../parser.js";
-import { DateTime } from 'luxon';
+// import { DateTime } from 'luxon'; 
 
 export default function Dashboard() {
   const nextId = useRef(0); 
@@ -22,16 +22,10 @@ export default function Dashboard() {
     descendState: (s:state) => void, 
     removeState: (s:state) => void })
   {
-    
-    // console.log("state id",state.id);
-    // console.log("state data",state.data);
-
     /** Returns datum.date in "Mon Year" format */
     const formatDate = (d:string) => {
       const date = new Date(d);
       return date;
-      // console.log(DateTime.fromJSDate(date).toFormat('yyyy LLL dd'));
-      // return DateTime.fromJSDate(date).toFormat('yyyy LLL dd'); 
     };
 
     return (
@@ -47,12 +41,12 @@ export default function Dashboard() {
               { 
                 dataKey: 'date',
                 scaleType: 'time', 
-                data: state.data?.map((val) => formatDate(val.date))
+                data: state.data?.map((val) => formatDate(val.date)).reverse()
               }
             ]}
             series={[
               {
-                data: state.data?.map((val) => val.death),
+                data: state.data?.map((val) => val.death).reverse(),
               }
             ]}
             height={300}
