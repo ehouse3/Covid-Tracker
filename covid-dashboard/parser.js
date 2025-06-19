@@ -56,6 +56,7 @@ function fetchState(state) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
+                    console.log("Parser.ts returning data for: ", state);
                     cleanedData = [];
                     return [4 /*yield*/, fetch('data/all-states-history.csv')
                             .then(function (response) { return response.text(); })

@@ -1,41 +1,59 @@
 'use client';
-// import Image from "next/image";
-// import { BarChart } from '@mui/x-charts/BarChart';
 import { useState, useRef } from 'react';
 import { LineChart } from "@mui/x-charts";
 import { datum ,fetchState } from "../parser.js";
+import { DateTime } from 'luxon';
 
 export default function Dashboard() {
   const nextId = useRef(0); 
   interface state {
     id: number | undefined,
-    abbrev: string
+    abbrev: string,
+    data?: datum[]
   }
 
   const [states, setStates] = useState<state[]>([]);
 
   /** StateItem Component that displays a single state. Includes title, movement buttons and graph */
   function StateItem(
-    { state, ascendState, descendState, removeState }: 
-    { state: state, 
-      ascendState: (s:state) => void, 
-      descendState: (s:state) => void, 
-      removeState: (s:state) => void }) 
-      {
+  { state, ascendState, descendState, removeState }: 
+  { state: state, 
+    ascendState: (s:state) => void, 
+    descendState: (s:state) => void, 
+    removeState: (s:state) => void })
+  {
+    
+    // console.log("state id",state.id);
+    // console.log("state data",state.data);
+
+    /** Returns datum.date in "Mon Year" format */
+    const formatDate = (d:string) => {
+      const date = new Date(d);
+      return date;
+      // console.log(DateTime.fromJSDate(date).toFormat('yyyy LLL dd'));
+      // return DateTime.fromJSDate(date).toFormat('yyyy LLL dd'); 
+    };
+
     return (
       <div key={state.id} className="flex flex-row justify-between flex-wrap border-4 border-sky-700 bg-sky-800 rounded-xl mx-5 my-5">
-        <h2 className="basis-3/4">{state.abbrev} {state.id}</h2>
+        <h2 className="basis-3/4">{state.abbrev}</h2>
         <StateButton callBack={ascendState} s={state} innerHTML='up'/>
         <StateButton callBack={descendState} s={state} innerHTML='down'/>
         <StateButton callBack={removeState} s={state} innerHTML='Remove'/>
 
         <div className="basis-full p-2">
           <LineChart
-            xAxis={[{ data: [1, 2, 3, 5, 8, 10] }]}
+            xAxis={[
+              { 
+                dataKey: 'date',
+                scaleType: 'time', 
+                data: state.data?.map((val) => formatDate(val.date))
+              }
+            ]}
             series={[
               {
-                data: [2, 5.5, 2, 8.5, 1.5, 5],
-              },
+                data: state.data?.map((val) => val.death),
+              }
             ]}
             height={300}
           />
@@ -59,11 +77,10 @@ export default function Dashboard() {
   async function addState(newState:state) {
     if(states.length >= 5) { return; }
 
-    const stateData:datum[] = await fetchState(newState.abbrev);
+    const stateData:datum[] = await fetchState(newState.abbrev)
     console.log("page.tsx fetch state return",stateData); 
-    
 
-    setStates([...states, { ...newState, id: nextId.current++ }]);
+    setStates([...states, { ...newState, id: nextId.current++, data:stateData}]); // Being called multiple times. useEffect might fix?
   }
 
   /** Removes active state from state list */
@@ -133,7 +150,7 @@ export default function Dashboard() {
       <div className="basis-full border-2"> Tracked States
         <div>
           {states.map((state) => state.id !== undefined && <StateItem key={state.id} state={state} ascendState={ascendState} descendState={descendState} removeState={removeState} />)}
-        </div>
+        </div> 
       </div>
     </main>
   );

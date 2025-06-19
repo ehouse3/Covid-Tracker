@@ -1,8 +1,8 @@
 import * as Papa from 'papaparse';
 
 export interface datum {
-    date:string|null,
-    state:string|null, 
+    date:string,
+    state:string, 
     death:number|null, 
     deathConfirmed:number|null, 
     deathIncrease:number|null,
@@ -46,6 +46,7 @@ export interface datum {
 
 /** Returns an datum array of requested state */
 export async function fetchState(state:string) {
+    console.log("Parser.ts returning data for: ", state);
     const cleanedData:datum[] = [];
     await fetch('data/all-states-history.csv')
         .then(response => response.text())
