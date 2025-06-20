@@ -15,7 +15,7 @@ export default function Dashboard() {
     id: number | undefined, //unique
     abbrev: string, 
     data?: datum[], // array of state data from csv
-    selectedMetrics?: string[] // selected data to be displayed by the graph
+    selectedMetrics?: (keyof datum)[] // selected data metrics to be displayed by the graph
   }
 
   const [states, setStates] = useState<state[]>([]);
@@ -41,7 +41,7 @@ export default function Dashboard() {
           <div className="w-1/3">
             <MetricDropdown state={state}/>
           </div>
-          <h2 className="w-1/3 flex flex-row flex-nowrap justify-center text-4xl">{state.abbrev}</h2>
+          <h2 className="w-1/3 flex flex-row flex-nowrap justify-center self-center text-5xl">{state.abbrev}</h2>
           <div className="w-1/3 flex flex-row flex-nowrap justify-end">
             <StateButton callBack={ascendState} state={state} innerHTML='Up'/>
             <StateButton callBack={descendState} state={state} innerHTML='Down'/>
@@ -53,19 +53,20 @@ export default function Dashboard() {
           <LineChart
             xAxis={[
               { 
-                dataKey: 'date',
-                scaleType: 'time', 
+                dataKey: "date",
+                scaleType: "time", 
                 data: state.data?.map((val) => formatDate(val.date)).reverse()
               }
             ]}
-            series={[
-              {
-                data: state.data?.map((val) => val.death).reverse(),
-              },
-              {
-                data: state.data?.map((val) => val.deathConfirmed).reverse(),
-              }
-            ]}
+            series={
+              state.selectedMetrics!.map((metric) => ( // Return Array of data for each metric
+                {
+                  data: state.data?.map((data) => {
+                      return data[metric] as number;
+                    }).reverse()
+                }
+              ))
+            }
             
             height={300}
           />
@@ -79,7 +80,7 @@ export default function Dashboard() {
     { callBack, state ,innerHTML}: 
     { callBack:(s:state) => void, state:state, innerHTML: string }) {
     return (
-      <button className="px-3 m-1 border-2 rounded-md border-sky-500 bg-sky-700 hover:bg-blue-600 hover:border-blue-500"
+      <button className="px-4 py-1 m-2 self-center border-2 rounded-md border-sky-500 bg-sky-700 hover:bg-blue-600 hover:border-blue-500"
         onClick={() => { callBack(state) }} >{innerHTML}</button>
     )
   }
@@ -95,7 +96,7 @@ export default function Dashboard() {
     return (
       <div className="m-2 border-2 rounded-md border-sky-500 bg-sky-700">
         <FormControl fullWidth>
-          <InputLabel className="bg-sky-700" id="demo-simple-select-label"><div className="px-2 text-white">Select Metrics</div></InputLabel>
+          <InputLabel className="bg-sky-700" id="demo-simple-select-label"><div className="px-2 text-xl">Metrics</div></InputLabel>
           <Select
             labelId="demo-simple-select-label"
             id="demo-simple-select"
@@ -111,8 +112,8 @@ export default function Dashboard() {
   }
 
   /** Handles onChange for MetricDropDownComponent. Updates corresponding state's selectedMetrics */
-  function handleMetricDropdownChange(e: SelectChangeEvent<string[]>, s: state) {
-    const metrics = e.target.value as string[];
+  function handleMetricDropdownChange(e: SelectChangeEvent<(keyof datum)[]>, s: state) {
+    const metrics = e.target.value as (keyof datum)[];
     const index = states.findIndex(st => st.id === s.id);
     const newStates = [...states];
     newStates[index].selectedMetrics = metrics;
@@ -174,7 +175,7 @@ export default function Dashboard() {
     <main className="flex flex-row flex-wrap items-center mx-10 my-10 bg-sky-900 text-2xl font-mono font-medium tracking-normal">
       <div className="flex flex-row basis-full justify-between border-2 w-full">
         <div className="w-1/3"></div>
-        <h1 className="w-1/3 text-center text-4xl font-bold">Covid Tracking Dashboard</h1>
+        <h1 className="w-1/3 text-center text-5xl font-bold">Covid Tracking Dashboard</h1>
         <div className="w-1/3 flex flex-box justify-end">
           <form onSubmit={handleSubmit}>
             <input
