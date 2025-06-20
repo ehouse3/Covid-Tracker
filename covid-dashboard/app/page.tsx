@@ -30,10 +30,16 @@ export default function Dashboard() {
 
     return (
       <div key={state.id} className="flex flex-row justify-between flex-wrap border-4 border-sky-700 bg-sky-800 rounded-xl mx-5 my-5">
-        <h2 className="basis-3/4">{state.abbrev}</h2>
-        <StateButton callBack={ascendState} s={state} innerHTML='up'/>
-        <StateButton callBack={descendState} s={state} innerHTML='down'/>
-        <StateButton callBack={removeState} s={state} innerHTML='Remove'/>
+
+        <div className="flex flex-row w-full">
+          <div className="w-1/3"></div>
+          <h2 className="w-1/3 flex flex-row flex-nowrap justify-center text-4xl">{state.abbrev}</h2>
+          <div className="w-1/3 flex flex-row flex-nowrap justify-end">
+            <StateButton callBack={ascendState} s={state} innerHTML='Up'/>
+            <StateButton callBack={descendState} s={state} innerHTML='Down'/>
+            <StateButton callBack={removeState} s={state} innerHTML='Remove'/>
+          </div>
+        </div>
 
         <div className="basis-full p-2">
           <LineChart
@@ -47,8 +53,12 @@ export default function Dashboard() {
             series={[
               {
                 data: state.data?.map((val) => val.death).reverse(),
+              },
+              {
+                data: state.data?.map((val) => val.deathConfirmed).reverse(),
               }
             ]}
+            
             height={300}
           />
         </div>
@@ -126,10 +136,10 @@ export default function Dashboard() {
 
   return (
     <main className="flex flex-row flex-wrap items-center mx-10 my-10 bg-sky-900 text-2xl font-mono font-medium tracking-normal">
-      <div className="flex flex-row basis-full justify-between border-2">
-        <div></div>
-        <h1 className="text-4xl font-bold">Covid Tracking Dashboard</h1>
-        <div>
+      <div className="flex flex-row basis-full justify-between border-2 w-full">
+        <div className="w-1/3"></div>
+        <h1 className="w-1/3 text-center text-4xl font-bold">Covid Tracking Dashboard</h1>
+        <div className="w-1/3 flex flex-box justify-end">
           <form onSubmit={handleSubmit}>
             <input
               name='stateAbbrev'
