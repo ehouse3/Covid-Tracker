@@ -1,73 +1,73 @@
 'use client';
 import { useState, useRef } from 'react';
+
 import { LineChart } from "@mui/x-charts";
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 
-import { datum ,fetchState } from "../parser.js";
+import { datum, fetchState } from "../parser.js";
 // import { DateTime } from 'luxon'; 
 
+interface State {
+  id?: number,
+  abbrev: string,
+  data?: datum[], // array of state's data from csv
+  selectedMetrics?: (keyof datum)[] // selected data metrics to be displayed by the graph
+}
+
 export default function Dashboard() {
-  const nextId = useRef(0); 
-  interface state {
-    id: number | undefined, //unique
-    abbrev: string, 
-    data?: datum[], // array of state data from csv
-    selectedMetrics?: (keyof datum)[] // selected data metrics to be displayed by the graph
+  const nextId = useRef(0);
+  const [states, setStates] = useState<State[]>([]);
+
+  interface StateItemProps {
+    state: State,
+    ascendState: (s: State) => void,
+    descendState: (s: State) => void,
+    removeState: (s: State) => void
   }
 
-  const [states, setStates] = useState<state[]>([]);
-
   /** StateItem Component that displays a single state. Includes title, movement buttons and graph */
-  function StateItem(
-  { state, ascendState, descendState, removeState }: 
-  { state: state, 
-    ascendState: (s:state) => void, 
-    descendState: (s:state) => void, 
-    removeState: (s:state) => void })
-  {
+  function StateItem(props: StateItemProps) {
     /** Returns datum.date in "Mon Year" format */
-    const formatDate = (d:string) => {
+    const formatDate = (d: string) => {
       const date = new Date(d);
       return date;
     };
 
     return (
-      <div key={state.id} className="flex flex-row justify-between flex-wrap border-4 border-sky-700 bg-sky-800 rounded-xl mx-5 my-5">
-
+      <div key={props.state.id} className="flex flex-row justify-between flex-wrap border-4 border-sky-700 bg-sky-800 rounded-xl mx-5 my-5">
         <div className="flex flex-row w-full">
           <div className="w-1/3">
-            <MetricDropdown state={state}/>
+            <MetricDropdown state={props.state} />
           </div>
-          <h2 className="w-1/3 flex flex-row flex-nowrap justify-center self-center text-5xl">{state.abbrev}</h2>
+          <h2 className="w-1/3 flex flex-row flex-nowrap justify-center self-center text-5xl">{props.state.abbrev}</h2>
           <div className="w-1/3 flex flex-row flex-nowrap justify-end">
-            <StateButton callBack={ascendState} state={state} innerHTML='Up'/>
-            <StateButton callBack={descendState} state={state} innerHTML='Down'/>
-            <StateButton callBack={removeState} state={state} innerHTML='Remove'/>
+            <StateButton onClick={() => ascendState(props.state)} buttonText='Up' />
+            <StateButton onClick={() => descendState(props.state)} buttonText='Down' />
+            <StateButton onClick={() => removeState(props.state)} buttonText='Remove' />
           </div>
         </div>
 
         <div className="basis-full p-2">
           <LineChart
             xAxis={[
-              { 
+              {
                 dataKey: "date",
-                scaleType: "time", 
-                data: state.data?.map((val) => formatDate(val.date)).reverse()
+                scaleType: "time",
+                data: props.state.data?.map((val) => formatDate(val.date)).reverse()
               }
             ]}
             series={
-              state.selectedMetrics!.map((metric) => ( // Return Array of data for each metric
+              props.state.selectedMetrics!.map((metric) => ( // Return Array of data for each metric
                 {
-                  data: state.data?.map((data) => {
-                      return data[metric] as number;
-                    }).reverse()
+                  data: props.state.data?.map((data) => {
+                    return data[metric] as number;
+                  }).reverse()
                 }
               ))
             }
-            
             height={300}
           />
         </div>
@@ -75,24 +75,32 @@ export default function Dashboard() {
     )
   }
 
+  interface StateButtonProps {
+    onClick: () => void,
+    buttonText: string
+  }
+
   /** StateButton Component that displays a button with callback function for press. */
-  function StateButton(
-    { callBack, state ,innerHTML}: 
-    { callBack:(s:state) => void, state:state, innerHTML: string }) {
+  function StateButton(props: StateButtonProps) {
     return (
-      <button className="px-4 py-1 m-2 self-center border-2 rounded-md border-sky-500 bg-sky-700 hover:bg-blue-600 hover:border-blue-500"
-        onClick={() => { callBack(state) }} >{innerHTML}</button>
+      <button
+        className="px-4 py-1 m-2 self-center border-2 rounded-md border-sky-500 bg-sky-700 hover:bg-blue-600 hover:border-blue-500"
+        onClick={props.onClick}
+      >
+        {props.buttonText}
+      </button>
     )
   }
 
-  const dataList:string[] = ["death","deathConfirmed","deathIncrease","deathProbable","hospitalized","hospitalizedCumulative","hospitalizedCurrently","hospitalizedIncrease","inIcuCumulative","inIcuCurrently","negative","negativeIncrease","negativeTestsAntibody","negativeTestsPeopleAntibody","negativeTestsViral","onVentilatorCumulative","onVentilatorCurrently","positive","positiveCasesViral","positiveIncrease","positiveScore","positiveTestsAntibody","positiveTestsAntigen","positiveTestsPeopleAntibody","positiveTestsPeopleAntigen","positiveTestsViral","recovered","totalTestEncountersViral","totalTestEncountersViralIncrease","totalTestResults","totalTestResultsIncrease","totalTestsAntibody","totalTestsAntigen","totalTestsPeopleAntibody","totalTestsPeopleAntigen","totalTestsPeopleViral","totalTestsPeopleViralIncrease","totalTestsViral","totalTestsViralIncrease"];
-  const dataListPretty:string[] = ["Death","deathConfirmed","deathIncrease","deathProbable","hospitalized","hospitalizedCumulative","hospitalizedCurrently","hospitalizedIncrease","inIcuCumulative","inIcuCurrently","negative","negativeIncrease","negativeTestsAntibody","negativeTestsPeopleAntibody","negativeTestsViral","onVentilatorCumulative","onVentilatorCurrently","positive","positiveCasesViral","positiveIncrease","positiveScore","positiveTestsAntibody","positiveTestsAntigen","positiveTestsPeopleAntibody","positiveTestsPeopleAntigen","positiveTestsViral","recovered","totalTestEncountersViral","totalTestEncountersViralIncrease","totalTestResults","totalTestResultsIncrease","totalTestsAntibody","totalTestsAntigen","totalTestsPeopleAntibody","totalTestsPeopleAntigen","totalTestsPeopleViral","totalTestsPeopleViralIncrease","totalTestsViral","totalTestsViralIncrease"];
+  const dataList: string[] = ["death", "deathConfirmed", "deathIncrease", "deathProbable", "hospitalized", "hospitalizedCumulative", "hospitalizedCurrently", "hospitalizedIncrease", "inIcuCumulative", "inIcuCurrently", "negative", "negativeIncrease", "negativeTestsAntibody", "negativeTestsPeopleAntibody", "negativeTestsViral", "onVentilatorCumulative", "onVentilatorCurrently", "positive", "positiveCasesViral", "positiveIncrease", "positiveScore", "positiveTestsAntibody", "positiveTestsAntigen", "positiveTestsPeopleAntibody", "positiveTestsPeopleAntigen", "positiveTestsViral", "recovered", "totalTestEncountersViral", "totalTestEncountersViralIncrease", "totalTestResults", "totalTestResultsIncrease", "totalTestsAntibody", "totalTestsAntigen", "totalTestsPeopleAntibody", "totalTestsPeopleAntigen", "totalTestsPeopleViral", "totalTestsPeopleViralIncrease", "totalTestsViral", "totalTestsViralIncrease"];
+  const dataListPretty: string[] = ["Deaths", "Confirmed Deaths", "Increased Deaths", "Probable Deaths", "Hospitalizations", "Cumulative Hospitalizations", "Currently Hospitalized", "Increase Hospitalizations", "Cumulative in ICU", "Currently in ICU ", "Negatives", "Increase Negatives", "Negative Antibody Tests", "Negative Antibody Tests People", "Negative Viral Tests", "Cumulativly on Ventilator", "Currently on Ventilator", "Positive", "Positive Viral Cases", "Positive Increase", "Positive Score", "Positive Tests Antibody", "Positive Antigen Tests", "Positive Antibody Tests People", "Positive Antigen Tests Peopel", "Positive Viral Tests", "Recovered", "Total Viral Test Encounters", "Total Viral Test Encounters Increase", "Total Test Results", "Total Test Results Increase", "Total Antibody Tests", "Total Antigen Tests", "Total Antibody Tests People ", "Total Antigen Tests People", "Total Viral Tests People ", "Total Increase Viral Tests People", "Total Viral Tests", "Total Increase Viral Tests"];
+
+  interface MetricDropDownProps {
+    state: State,
+  }
+
   /** Dropdown component to select which metrics of data to display */
-  function MetricDropdown(
-    { state }:
-    { state:state}
-  ) 
-  {
+  function MetricDropdown(props: MetricDropDownProps) {
     return (
       <div className="m-2 border-2 rounded-md border-sky-500 bg-sky-700">
         <FormControl fullWidth>
@@ -101,8 +109,8 @@ export default function Dashboard() {
             labelId="demo-simple-select-label"
             id="demo-simple-select"
             multiple
-            value={state.selectedMetrics}
-            onChange={(e) => handleMetricDropdownChange(e, state)}
+            value={props.state.selectedMetrics}
+            onChange={(e) => handleMetricDropdownChange(e, props.state)}
           >
             {dataList.map((val, index) => <MenuItem value={val} key={val}>{dataListPretty[index]}</MenuItem>)}
           </Select>
@@ -112,7 +120,7 @@ export default function Dashboard() {
   }
 
   /** Handles onChange for MetricDropDownComponent. Updates corresponding state's selectedMetrics */
-  function handleMetricDropdownChange(e: SelectChangeEvent<(keyof datum)[]>, s: state) {
+  function handleMetricDropdownChange(e: SelectChangeEvent<(keyof datum)[]>, s: State) {
     const metrics = e.target.value as (keyof datum)[];
     const index = states.findIndex(st => st.id === s.id);
     const newStates = [...states];
@@ -120,27 +128,27 @@ export default function Dashboard() {
     setStates(newStates);
   }
 
-  /** Adds state to active state list w/ unique id. Fetches state data as well */
-  async function addState(newState:state) {
-    if(states.length >= 5) { return; }
+  /** Adds state to active state list w/ id. Fetches state's data as well */
+  async function addState(s: State) {
+    if (states.length > 6) { return; }
 
-    const stateData:datum[] = await fetchState(newState.abbrev)
-    console.log("page.tsx fetch state return",stateData); 
+    const stateData: datum[] = await fetchState(s.abbrev)
+    console.log("page.tsx fetch state return", stateData);
 
-    setStates([...states, { ...newState, id: nextId.current++, data:stateData, selectedMetrics:[]}]); // Being called multiple times. useEffect might fix?
+    setStates([...states, { ...s, id: nextId.current++, data: stateData, selectedMetrics: [] }]); // Being called multiple times... useEffect might fix?
   }
 
   /** Removes active state from state list */
-  function removeState(s:state) {
+  function removeState(s: State) {
     setStates(states.filter(st => st.id !== s.id));
   }
 
   /** Moves displayed state up one position */
-  function ascendState(s:state) {
+  function ascendState(s: State) {
     const index = states.findIndex(st => st.id === s.id);
     if (index !== 0) {
       const newStates = [...states];
-      const temp:state = newStates[index];
+      const temp: State = newStates[index];
       newStates[index] = newStates[index - 1];
       newStates[index - 1] = temp;
       setStates(newStates);
@@ -148,26 +156,26 @@ export default function Dashboard() {
   }
 
   /** Moves displayed state down one position */
-  function descendState(s:state) {
+  function descendState(s: State) {
     const index = states.findIndex(st => st.id === s.id);
     if (index < states.length - 1) {
       const newStates = [...states];
-      const temp:state = newStates[index];
+      const temp: State = newStates[index];
       newStates[index] = newStates[index + 1];
       newStates[index + 1] = temp;
       setStates(newStates);
     }
   }
 
-  const acceptStates = ["AK", "AL", "AR", "AS", "AZ", "CA", "CO", "CT", "DC", "DE", "FL", "GA", "GU", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA", "MA", "MD", "ME", "MI", "MN", "MO", "MP", "MS", "MT", "NC", "ND", "NE", "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "PR", "RI", "SC", "SD", "TN", "TX", "UT", "VA", "VI", "VT", "WA", "WI", "WV", "WY" ];
+  const acceptStates = ["AK", "AL", "AR", "AS", "AZ", "CA", "CO", "CT", "DC", "DE", "FL", "GA", "GU", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA", "MA", "MD", "ME", "MI", "MN", "MO", "MP", "MS", "MT", "NC", "ND", "NE", "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "PR", "RI", "SC", "SD", "TN", "TX", "UT", "VA", "VI", "VT", "WA", "WI", "WV", "WY"];
   /** Handles submit event, calling addState if appropriate */
-  function handleSubmit(e:React.FormEvent<HTMLFormElement>) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) { // New State's ID should be created here?
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const stateAbbrev = (formData.get("stateAbbrev") as string).toUpperCase();
 
-    if(acceptStates.includes(stateAbbrev)) {
-      addState({ id: undefined, abbrev: stateAbbrev });
+    if (acceptStates.includes(stateAbbrev)) {
+      addState({ abbrev: stateAbbrev });
     }
   }
 
@@ -183,15 +191,18 @@ export default function Dashboard() {
               className="px-2 m-1 rounded-md text-neutral-900 bg-sky-50"
               type="text" placeholder="e.g. NY" autoCapitalize="characters" />
             <button
-              className="px-2 m-1 border-2 rounded-md border-sky-500 bg-sky-700 hover:bg-blue-600 hover:border-blue-500" 
-              type="submit">Add State</button>
+              className="px-2 m-1 border-2 rounded-md border-sky-500 bg-sky-700 hover:bg-blue-600 hover:border-blue-500"
+              type="submit"
+            >
+              Add State
+            </button>
           </form>
         </div>
       </div>
       <div className="basis-full border-2"> Tracked States
         <div>
           {states.map((state) => state.id !== undefined && <StateItem key={state.id} state={state} ascendState={ascendState} descendState={descendState} removeState={removeState} />)}
-        </div> 
+        </div>
       </div>
     </main>
   );
