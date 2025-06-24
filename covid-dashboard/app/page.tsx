@@ -21,6 +21,10 @@ export default function Dashboard() {
   const nextId = useRef(0);
   const [states, setStates] = useState<State[]>([]);
 
+  // Metrics List and Metrics List to be displayed of data
+  const dataList: string[] = ["death", "deathConfirmed", "deathIncrease", "deathProbable", "hospitalized", "hospitalizedCumulative", "hospitalizedCurrently", "hospitalizedIncrease", "inIcuCumulative", "inIcuCurrently", "negative", "negativeIncrease", "negativeTestsAntibody", "negativeTestsPeopleAntibody", "negativeTestsViral", "onVentilatorCumulative", "onVentilatorCurrently", "positive", "positiveCasesViral", "positiveIncrease", "positiveScore", "positiveTestsAntibody", "positiveTestsAntigen", "positiveTestsPeopleAntibody", "positiveTestsPeopleAntigen", "positiveTestsViral", "recovered", "totalTestEncountersViral", "totalTestEncountersViralIncrease", "totalTestResults", "totalTestResultsIncrease", "totalTestsAntibody", "totalTestsAntigen", "totalTestsPeopleAntibody", "totalTestsPeopleAntigen", "totalTestsPeopleViral", "totalTestsPeopleViralIncrease", "totalTestsViral", "totalTestsViralIncrease"];
+  const dataListPretty: string[] = ["Deaths", "Confirmed Deaths", "Increased Deaths", "Probable Deaths", "Hospitalizations", "Cumulative Hospitalizations", "Currently Hospitalized", "Increase Hospitalizations", "Cumulative in ICU", "Currently in ICU ", "Negatives", "Increase Negatives", "Negative Antibody Tests", "Negative Antibody Tests People", "Negative Viral Tests", "Cumulativly on Ventilator", "Currently on Ventilator", "Positive", "Positive Viral Cases", "Positive Increase", "Positive Score", "Positive Tests Antibody", "Positive Antigen Tests", "Positive Antibody Tests People", "Positive Antigen Tests Peopel", "Positive Viral Tests", "Recovered", "Total Viral Test Encounters", "Total Viral Test Encounters Increase", "Total Test Results", "Total Test Results Increase", "Total Antibody Tests", "Total Antigen Tests", "Total Antibody Tests People ", "Total Antigen Tests People", "Total Viral Tests People ", "Total Increase Viral Tests People", "Total Viral Tests", "Total Increase Viral Tests"];
+
   interface StateItemProps {
     state: State,
     ascendState: (s: State) => void,
@@ -40,7 +44,11 @@ export default function Dashboard() {
       <div key={props.state.id} className="flex flex-row justify-between flex-wrap border-4 border-sky-700 bg-sky-800 rounded-xl mx-5 my-5">
         <div className="flex flex-row w-full">
           <div className="w-1/3">
-            <MetricDropdown state={props.state} />
+            <Dropdown
+              items={dataList.map((val, index) => <MenuItem value={val} key={val}>{dataListPretty[index]}</MenuItem>)}
+              value={props.state.selectedMetrics as string[]}
+              onChange={(e) => {handleMetricDropdownChange(e as SelectChangeEvent<(keyof datum)[]>, props.state);}}
+            />
           </div>
           <h2 className="w-1/3 flex flex-row flex-nowrap justify-center self-center text-5xl">{props.state.abbrev}</h2>
           <div className="w-1/3 flex flex-row flex-nowrap justify-end">
@@ -92,15 +100,14 @@ export default function Dashboard() {
     )
   }
 
-  const dataList: string[] = ["death", "deathConfirmed", "deathIncrease", "deathProbable", "hospitalized", "hospitalizedCumulative", "hospitalizedCurrently", "hospitalizedIncrease", "inIcuCumulative", "inIcuCurrently", "negative", "negativeIncrease", "negativeTestsAntibody", "negativeTestsPeopleAntibody", "negativeTestsViral", "onVentilatorCumulative", "onVentilatorCurrently", "positive", "positiveCasesViral", "positiveIncrease", "positiveScore", "positiveTestsAntibody", "positiveTestsAntigen", "positiveTestsPeopleAntibody", "positiveTestsPeopleAntigen", "positiveTestsViral", "recovered", "totalTestEncountersViral", "totalTestEncountersViralIncrease", "totalTestResults", "totalTestResultsIncrease", "totalTestsAntibody", "totalTestsAntigen", "totalTestsPeopleAntibody", "totalTestsPeopleAntigen", "totalTestsPeopleViral", "totalTestsPeopleViralIncrease", "totalTestsViral", "totalTestsViralIncrease"];
-  const dataListPretty: string[] = ["Deaths", "Confirmed Deaths", "Increased Deaths", "Probable Deaths", "Hospitalizations", "Cumulative Hospitalizations", "Currently Hospitalized", "Increase Hospitalizations", "Cumulative in ICU", "Currently in ICU ", "Negatives", "Increase Negatives", "Negative Antibody Tests", "Negative Antibody Tests People", "Negative Viral Tests", "Cumulativly on Ventilator", "Currently on Ventilator", "Positive", "Positive Viral Cases", "Positive Increase", "Positive Score", "Positive Tests Antibody", "Positive Antigen Tests", "Positive Antibody Tests People", "Positive Antigen Tests Peopel", "Positive Viral Tests", "Recovered", "Total Viral Test Encounters", "Total Viral Test Encounters Increase", "Total Test Results", "Total Test Results Increase", "Total Antibody Tests", "Total Antigen Tests", "Total Antibody Tests People ", "Total Antigen Tests People", "Total Viral Tests People ", "Total Increase Viral Tests People", "Total Viral Tests", "Total Increase Viral Tests"];
-
-  interface MetricDropDownProps {
-    state: State,
+  interface DropDownProps {
+    items: React.ReactNode[],
+    value: string[],
+    onChange: (e: SelectChangeEvent<string[]>) => void,
   }
 
   /** Dropdown component to select which metrics of data to display */
-  function MetricDropdown(props: MetricDropDownProps) {
+  function Dropdown(props: DropDownProps) {
     return (
       <div className="m-2 border-2 rounded-md border-sky-500 bg-sky-700">
         <FormControl fullWidth>
@@ -109,10 +116,10 @@ export default function Dashboard() {
             labelId="demo-simple-select-label"
             id="demo-simple-select"
             multiple
-            value={props.state.selectedMetrics}
-            onChange={(e) => handleMetricDropdownChange(e, props.state)}
+            value={props.value}
+            onChange={props.onChange}
           >
-            {dataList.map((val, index) => <MenuItem value={val} key={val}>{dataListPretty[index]}</MenuItem>)}
+            {props.items}
           </Select>
         </FormControl>
       </div>
@@ -169,7 +176,7 @@ export default function Dashboard() {
 
   const acceptStates = ["AK", "AL", "AR", "AS", "AZ", "CA", "CO", "CT", "DC", "DE", "FL", "GA", "GU", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA", "MA", "MD", "ME", "MI", "MN", "MO", "MP", "MS", "MT", "NC", "ND", "NE", "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "PR", "RI", "SC", "SD", "TN", "TX", "UT", "VA", "VI", "VT", "WA", "WI", "WV", "WY"];
   /** Handles submit event, calling addState if appropriate */
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) { // New State's ID should be created here?
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const stateAbbrev = (formData.get("stateAbbrev") as string).toUpperCase();
