@@ -49,26 +49,70 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fetchState = fetchState;
 var Papa = require("papaparse");
+// Would be more effictient as an array, then dynamically decrease the number of checks as it runs
+// Beginning list of metrics to be changed after checking if all null
+var negativeNullMetrics = {
+    death: false,
+    deathConfirmed: false,
+    deathIncrease: false,
+    deathProbable: false,
+    hospitalized: false,
+    hospitalizedCumulative: false,
+    hospitalizedCurrently: false,
+    hospitalizedIncrease: false,
+    inIcuCumulative: false,
+    inIcuCurrently: false,
+    negative: false,
+    negativeIncrease: false,
+    negativeTestsAntibody: false,
+    negativeTestsPeopleAntibody: false,
+    negativeTestsViral: false,
+    onVentilatorCumulative: false,
+    onVentilatorCurrently: false,
+    positive: false,
+    positiveCasesViral: false,
+    positiveIncrease: false,
+    positiveScore: false,
+    positiveTestsAntibody: false,
+    positiveTestsAntigen: false,
+    positiveTestsPeopleAntibody: false,
+    positiveTestsPeopleAntigen: false,
+    positiveTestsViral: false,
+    recovered: false,
+    totalTestEncountersViral: false,
+    totalTestEncountersViralIncrease: false,
+    totalTestResults: false,
+    totalTestResultsIncrease: false,
+    totalTestsAntibody: false,
+    totalTestsAntigen: false,
+    totalTestsPeopleAntibody: false,
+    totalTestsPeopleAntigen: false,
+    totalTestsPeopleViral: false,
+    totalTestsPeopleViralIncrease: false,
+    totalTestsViral: false,
+    totalTestsViralIncrease: false,
+};
 /** Returns an datum array of requested state */
-function fetchState(state) {
+function fetchState(s) {
     return __awaiter(this, void 0, void 0, function () {
-        var cleanedData;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    console.log("Parser.ts returning data for: ", state);
-                    cleanedData = [];
+                    console.log("Parser.ts returning data for: ", s.abbrev);
+                    // keeps requested state values; nullyfing, and assigning nullMetrics, while it itterates
+                    s = __assign(__assign({}, s), { data: [], nullMetrics: negativeNullMetrics });
                     return [4 /*yield*/, fetch('data/all-states-history.csv')
                             .then(function (response) { return response.text(); })
                             .then(function (csvText) {
                             Papa.parse(csvText, {
                                 header: true,
                                 complete: function (results) {
-                                    // keeps requested state values, nullyfing while it itterates
-                                    for (var i = 0; i < results.data.length; i++) {
-                                        if (results.data[i].state === state) {
-                                            var datum = nullifyEmptyValues(results.data[i]);
-                                            cleanedData.push(datum);
+                                    var _a;
+                                    for (var i = 0; i < results.data.length; i++) { // TODO Coalesce other requests from page.tsx
+                                        if (results.data[i].state === s.abbrev) {
+                                            var datum = nullifyEmptyMetrics(results.data[i]);
+                                            s.nullMetrics = setNullMetrics(datum, s);
+                                            (_a = s.data) === null || _a === void 0 ? void 0 : _a.push(datum);
                                         }
                                     }
                                 },
@@ -76,19 +120,29 @@ function fetchState(state) {
                         })];
                 case 1:
                     _a.sent();
-                    return [2 /*return*/, cleanedData];
+                    return [2 /*return*/, s];
             }
         });
     });
 }
-/** Returns datum, with empty string properties replaced with null */
-function nullifyEmptyValues(datum) {
-    var fixedDatum = __assign({}, datum);
-    for (var k in fixedDatum) {
-        var key = k; // allows indexing
-        if (fixedDatum[key] === "") {
-            fixedDatum[key] = null; // there HAS to be a better way to not use unknown type.
+/** Returns datum with empty string properties replaced with null */
+function nullifyEmptyMetrics(datum) {
+    for (var k in datum) {
+        var key = k;
+        if (datum[key] === "") {
+            datum[key] = null; // There HAS to be a better way
         }
     }
-    return fixedDatum;
+    return datum;
+}
+/** Returns nullMetrics, where nullMetrics.prop is set to true if index's metric is non-null, unchanged otherwise */
+function setNullMetrics(data, s) {
+    for (var k in data) {
+        if (data[k] !== null) {
+            if (s.nullMetrics !== undefined) {
+                s.nullMetrics[k] = true;
+            }
+        }
+    }
+    return s.nullMetrics;
 }

@@ -7,15 +7,7 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 
-import { datum, fetchState } from "../parser.js";
-// import { DateTime } from 'luxon'; 
-
-interface State {
-  id?: number,
-  abbrev: string,
-  data?: datum[], // array of state's data from csv
-  selectedMetrics?: (keyof datum)[] // selected data metrics to be displayed by the graph
-}
+import { State, datum, fetchState } from "../parser";
 
 export default function Dashboard() {
   const nextId = useRef(0);
@@ -32,8 +24,8 @@ export default function Dashboard() {
     removeState: (s: State) => void
   }
 
-  /** StateItem Component that displays a single state. Includes title, movement buttons and graph */
-  function StateItem(props: StateItemProps) {
+  /** StateItem Component that displays a single state. Includes title, metric selector, movement buttons and graph */
+  function StateItem(props: StateItemProps) { // Being called multiple times... useEffect might fix?
     /** Returns datum.date in "Mon Year" format */
     const formatDate = (d: string) => {
       const date = new Date(d);
@@ -45,16 +37,22 @@ export default function Dashboard() {
         <div className="flex flex-row w-full">
           <div className="w-1/3">
             <Dropdown
-              items={dataList.map((val, index) => <MenuItem value={val} key={val}>{dataListPretty[index]}</MenuItem>)}
+              items={dataList.map((val, index) => { // List of metrics to choose
+                if (props.state.nullMetrics && props.state.nullMetrics[val as keyof (typeof props.state.nullMetrics)]) { // Strikes through displayed metrics that are all null
+                  return <MenuItem value={val} key={val}><p className="inline">{dataListPretty[index]}</p></MenuItem>;
+                } else {
+                  return <MenuItem value={val} key={val}><p className="inline line-through">{dataListPretty[index]}</p></MenuItem>;
+                }
+              })}
               value={props.state.selectedMetrics as string[]}
-              onChange={(e) => {handleMetricDropdownChange(e as SelectChangeEvent<(keyof datum)[]>, props.state);}}
+              onChange={(e) => { handleMetricDropdownChange(e as SelectChangeEvent<(keyof datum)[]>, props.state); }}
             />
           </div>
           <h2 className="w-1/3 flex flex-row flex-nowrap justify-center self-center text-5xl">{props.state.abbrev}</h2>
           <div className="w-1/3 flex flex-row flex-nowrap justify-end">
-            <StateButton onClick={() => ascendState(props.state)} buttonText='Up' />
-            <StateButton onClick={() => descendState(props.state)} buttonText='Down' />
-            <StateButton onClick={() => removeState(props.state)} buttonText='Remove' />
+            <StateButton onClick={() => ascendState(props.state)} buttonText="Up" />
+            <StateButton onClick={() => descendState(props.state)} buttonText="Down" />
+            <StateButton onClick={() => removeState(props.state)} buttonText="Remove" />
           </div>
         </div>
 
@@ -64,11 +62,11 @@ export default function Dashboard() {
               {
                 dataKey: "date",
                 scaleType: "time",
-                data: props.state.data?.map((val) => formatDate(val.date)).reverse()
+                data: props.state.data?.map((val) => formatDate(val.date as string)).reverse()
               }
             ]}
             series={
-              props.state.selectedMetrics!.map((metric) => ( // Return Array of data for each metric
+              props.state.selectedMetrics!.map((metric) => ( // Returns chronoligically ordered array of data for each metric to display
                 {
                   data: props.state.data?.map((data) => {
                     return data[metric] as number;
@@ -139,10 +137,10 @@ export default function Dashboard() {
   async function addState(s: State) {
     if (states.length > 6) { return; }
 
-    const stateData: datum[] = await fetchState(s.abbrev)
-    console.log("page.tsx fetch state return", stateData);
+    s = await fetchState(s);
+    console.log("page.tsx fetch state returned: ", s);
 
-    setStates([...states, { ...s, id: nextId.current++, data: stateData, selectedMetrics: [] }]); // Being called multiple times... useEffect might fix?
+    setStates([...states, { ...s, id: nextId.current++, selectedMetrics: [] }]);
   }
 
   /** Removes active state from state list */
