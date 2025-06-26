@@ -14,7 +14,7 @@ export default function Dashboard() {
   const [states, setStates] = useState<State[]>([]);
 
   // Metrics List and Metrics List to be displayed of data
-  const dataList: string[] = ["death", "deathConfirmed", "deathIncrease", "deathProbable", "hospitalized", "hospitalizedCumulative", "hospitalizedCurrently", "hospitalizedIncrease", "inIcuCumulative", "inIcuCurrently", "negative", "negativeIncrease", "negativeTestsAntibody", "negativeTestsPeopleAntibody", "negativeTestsViral", "onVentilatorCumulative", "onVentilatorCurrently", "positive", "positiveCasesViral", "positiveIncrease", "positiveScore", "positiveTestsAntibody", "positiveTestsAntigen", "positiveTestsPeopleAntibody", "positiveTestsPeopleAntigen", "positiveTestsViral", "recovered", "totalTestEncountersViral", "totalTestEncountersViralIncrease", "totalTestResults", "totalTestResultsIncrease", "totalTestsAntibody", "totalTestsAntigen", "totalTestsPeopleAntibody", "totalTestsPeopleAntigen", "totalTestsPeopleViral", "totalTestsPeopleViralIncrease", "totalTestsViral", "totalTestsViralIncrease"];
+  const dataList: (keyof datum)[] = ["death", "deathConfirmed", "deathIncrease", "deathProbable", "hospitalized", "hospitalizedCumulative", "hospitalizedCurrently", "hospitalizedIncrease", "inIcuCumulative", "inIcuCurrently", "negative", "negativeIncrease", "negativeTestsAntibody", "negativeTestsPeopleAntibody", "negativeTestsViral", "onVentilatorCumulative", "onVentilatorCurrently", "positive", "positiveCasesViral", "positiveIncrease", "positiveScore", "positiveTestsAntibody", "positiveTestsAntigen", "positiveTestsPeopleAntibody", "positiveTestsPeopleAntigen", "positiveTestsViral", "recovered", "totalTestEncountersViral", "totalTestEncountersViralIncrease", "totalTestResults", "totalTestResultsIncrease", "totalTestsAntibody", "totalTestsAntigen", "totalTestsPeopleAntibody", "totalTestsPeopleAntigen", "totalTestsPeopleViral", "totalTestsPeopleViralIncrease", "totalTestsViral", "totalTestsViralIncrease"];
   const dataListPretty: string[] = ["Deaths", "Confirmed Deaths", "Increased Deaths", "Probable Deaths", "Hospitalizations", "Cumulative Hospitalizations", "Currently Hospitalized", "Increase Hospitalizations", "Cumulative in ICU", "Currently in ICU ", "Negatives", "Increase Negatives", "Negative Antibody Tests", "Negative Antibody Tests People", "Negative Viral Tests", "Cumulativly on Ventilator", "Currently on Ventilator", "Positive", "Positive Viral Cases", "Positive Increase", "Positive Score", "Positive Tests Antibody", "Positive Antigen Tests", "Positive Antibody Tests People", "Positive Antigen Tests Peopel", "Positive Viral Tests", "Recovered", "Total Viral Test Encounters", "Total Viral Test Encounters Increase", "Total Test Results", "Total Test Results Increase", "Total Antibody Tests", "Total Antigen Tests", "Total Antibody Tests People ", "Total Antigen Tests People", "Total Viral Tests People ", "Total Increase Viral Tests People", "Total Viral Tests", "Total Increase Viral Tests"];
 
   interface StateItemProps {
@@ -27,6 +27,7 @@ export default function Dashboard() {
   /** StateItem Component that displays a single state. Includes title, metric selector, movement buttons and graph */
   function StateItem(props: StateItemProps) { // Being called multiple times... useEffect might fix?
     /** Returns datum.date in "Mon Year" format */
+    console.log(props.state);
     const formatDate = (d: string) => {
       const date = new Date(d);
       return date;
@@ -44,7 +45,7 @@ export default function Dashboard() {
                   return <MenuItem value={val} key={val}><p className="inline line-through">{dataListPretty[index]}</p></MenuItem>;
                 }
               })}
-              value={props.state.selectedMetrics as string[]}
+              value={props.state.selected?.metric as string[]}
               onChange={(e) => { handleMetricDropdownChange(e as SelectChangeEvent<(keyof datum)[]>, props.state); }}
             />
           </div>
@@ -67,8 +68,9 @@ export default function Dashboard() {
               }
             ]}
             series={
-              props.state.selectedMetrics!.map((metric) => ( // Returns chronoligically ordered array of data for each metric to display
+              props.state.selected!.metric.map((metric, index) => ( // Returns chronoligically ordered array of data for each metric to display
                 {
+                  label: props.state.selected!.prettyMetric[index],
                   data: props.state.data?.map((data) => {
                     return data[metric] as number;
                   }).reverse()
@@ -107,6 +109,7 @@ export default function Dashboard() {
 
   /** Dropdown component to select which metrics of data to display */
   function Dropdown(props: DropDownProps) {
+
     return (
       <div className="m-2 border-2 rounded-md border-sky-500 bg-sky-700">
         <FormControl fullWidth>
@@ -125,12 +128,17 @@ export default function Dashboard() {
     )
   }
 
-  /** Handles onChange for MetricDropDownComponent. Updates corresponding state's selectedMetrics */
+  /** Handles onChange for MetricDropDownComponent. Updates corresponding state's selected metrics */
   function handleMetricDropdownChange(e: SelectChangeEvent<(keyof datum)[]>, s: State) {
     const metrics = e.target.value as (keyof datum)[];
     const index = states.findIndex(st => st.id === s.id);
     const newStates = [...states];
-    newStates[index].selectedMetrics = metrics;
+    // Find and set new selected metrics and prettyMetrics
+    newStates[index].selected!.metric = metrics;
+    for (let i = 0; i < metrics.length; i++) {
+      const dataIndex = dataList.findIndex(m => m === metrics[i]);
+      newStates[index].selected!.prettyMetric[i] = dataListPretty[dataIndex];
+    }
     setStates(newStates);
   }
 
@@ -141,7 +149,7 @@ export default function Dashboard() {
     s = await fetchState(s);
     console.log("page.tsx fetch state returned: ", s);
 
-    setStates([...states, { ...s, id: nextId.current++, selectedMetrics: [] }]);
+    setStates([...states, { ...s, id: nextId.current++, selected: { metric: [], prettyMetric: [] } }]);
   }
 
   /** Removes active state from state list */

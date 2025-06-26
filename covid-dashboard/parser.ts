@@ -133,11 +133,11 @@ const negativeNullMetrics: nullMetrics = {
 
 /** State information */
 export interface State {
-  id?: number, //unique
-  abbrev: string,
-  data?: datum[], // array of state's data from csv
-  selectedMetrics?: (keyof datum)[], // selected data metrics to be displayed by the graph
-  nullMetrics?: nullMetrics, // prop is true if all of that metric's props is Null, false otherwise
+    id?: number, //unique
+    abbrev: string,
+    data?: datum[], // array of state's data from csv
+    selected?: { metric: (keyof datum)[], prettyMetric: string[] } // Selected data metrics and pretty metrics
+    nullMetrics?: nullMetrics, // prop is true if all of that metric's props is Null, false otherwise
 }
 
 
@@ -150,14 +150,14 @@ export async function fetchState(s: State) {
         data: [],
         nullMetrics: negativeNullMetrics,
     };
-    
+
     await fetch('data/all-states-history.csv')
         .then(response => response.text())
         .then(csvText => {
             Papa.parse(csvText, {
                 header: true,
                 complete: function (results: Papa.ParseResult<datum>) {
-                    
+
                     for (let i = 0; i < results.data.length; i++) { // TODO Coalesce other requests from page.tsx
                         if (results.data[i].state === s.abbrev) {
                             const datum: datum = nullifyEmptyMetrics(results.data[i]);
@@ -169,7 +169,7 @@ export async function fetchState(s: State) {
                 },
             });
         }
-    )
+        )
 
     return s;
 }
@@ -190,8 +190,8 @@ function nullifyEmptyMetrics(datum: datum) {
 function setNullMetrics(data: Omit<datum, 'date' | 'state'>, s: State) {
     for (const k in data) {
         if (data[k as keyof nullMetrics] !== null) {
-            if(s.nullMetrics !== undefined) { 
-                s.nullMetrics[k as keyof nullMetrics] = true; 
+            if (s.nullMetrics !== undefined) {
+                s.nullMetrics[k as keyof nullMetrics] = true;
             }
         }
     }
