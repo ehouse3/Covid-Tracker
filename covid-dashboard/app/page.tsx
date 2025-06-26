@@ -27,7 +27,7 @@ export default function Dashboard() {
   /** StateItem Component that displays a single state. Includes title, metric selector, movement buttons and graph */
   function StateItem(props: StateItemProps) { // Being called multiple times... useEffect might fix?
     /** Returns datum.date in "Mon Year" format */
-    console.log(props.state);
+    // console.log(props.state);
     const formatDate = (d: string) => {
       const date = new Date(d);
       return date;
@@ -131,14 +131,20 @@ export default function Dashboard() {
   /** Handles onChange for MetricDropDownComponent. Updates corresponding state's selected metrics */
   function handleMetricDropdownChange(e: SelectChangeEvent<(keyof datum)[]>, s: State) {
     const metrics = e.target.value as (keyof datum)[];
-    const index = states.findIndex(st => st.id === s.id);
+    const sIndex = states.findIndex(st => st.id === s.id);
     const newStates = [...states];
-    // Find and set new selected metrics and prettyMetrics
-    newStates[index].selected!.metric = metrics;
-    for (let i = 0; i < metrics.length; i++) {
-      const dataIndex = dataList.findIndex(m => m === metrics[i]);
-      newStates[index].selected!.prettyMetric[i] = dataListPretty[dataIndex];
-    }
+
+    if (newStates[sIndex].selected === undefined) { return }
+
+    // Assigning new selected metrics and prettyMetrics
+    newStates[sIndex].selected.metric = metrics; 
+    metrics.forEach((metric, i) => {
+      // set selected.prettyMetric using index of selected.metric
+      const dataIndex = dataList.findIndex(m => m === metric); 
+      if (newStates[sIndex].selected === undefined) { return }
+      newStates[sIndex].selected.prettyMetric[i] = dataListPretty[dataIndex];
+    })
+
     setStates(newStates);
   }
 
