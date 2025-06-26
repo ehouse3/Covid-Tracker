@@ -33,7 +33,7 @@ export default function Dashboard() {
     };
 
     return (
-      <div key={props.state.id} className="flex flex-row justify-between flex-wrap border-4 border-sky-700 bg-sky-800 rounded-xl mx-5 my-5">
+      <div key={props.state.id} className="flex flex-row justify-between flex-wrap bg-sky-800 rounded-xl p-2 my-7 border-4">
         <div className="flex flex-row w-full">
           <div className="w-1/3">
             <Dropdown
@@ -49,15 +49,16 @@ export default function Dashboard() {
             />
           </div>
           <h2 className="w-1/3 flex flex-row flex-nowrap justify-center self-center text-5xl">{props.state.abbrev}</h2>
-          <div className="w-1/3 flex flex-row flex-nowrap justify-end">
-            <StateButton onClick={() => ascendState(props.state)} buttonText="Up" />
-            <StateButton onClick={() => descendState(props.state)} buttonText="Down" />
-            <StateButton onClick={() => removeState(props.state)} buttonText="Remove" />
+          <div className="w-1/3 px-2 flex flex-row flex-nowrap justify-end">
+            <StateButton onClick={() => ascendState(props.state)} buttonText="UP" />
+            <StateButton onClick={() => descendState(props.state)} buttonText="DOWN" />
+            <StateButton onClick={() => removeState(props.state)} buttonText="DELETE" />
           </div>
         </div>
 
         <div className="basis-full p-2">
           <LineChart
+            // dataset={}
             xAxis={[
               {
                 dataKey: "date",
@@ -185,8 +186,8 @@ export default function Dashboard() {
   }
 
   return (
-    <main className="flex flex-row flex-wrap items-center mx-10 my-10 bg-sky-900 text-2xl font-mono font-medium tracking-normal">
-      <div className="flex flex-row basis-full justify-between border-2 w-full">
+    <main className="flex flex-row flex-wrap items-center mx-10 my-10 text-2xl font-mono font-medium tracking-normal">
+      <div className="flex flex-row basis-full justify-between bg-sky-800 p-1 border-4 rounded-xl">
         <div className="w-1/3"></div>
         <h1 className="w-1/3 text-center text-5xl font-bold">Covid Tracking Dashboard</h1>
         <div className="w-1/3 flex flex-box justify-end">
@@ -204,10 +205,8 @@ export default function Dashboard() {
           </form>
         </div>
       </div>
-      <div className="basis-full border-2"> Tracked States
-        <div>
-          {states.map((state) => state.id !== undefined && <StateItem key={state.id} state={state} ascendState={ascendState} descendState={descendState} removeState={removeState} />)}
-        </div>
+      <div className="basis-full">
+        {states.map((state) => state.id !== undefined && <StateItem key={state.id} state={state} ascendState={ascendState} descendState={descendState} removeState={removeState} />)}
       </div>
     </main>
   );
