@@ -40,12 +40,12 @@ export default function Dashboard() {
             <Dropdown
               items={dataList.map((val, index) => { // List of metrics to choose
                 if (props.state.nullMetrics && props.state.nullMetrics[val as keyof (typeof props.state.nullMetrics)]) { // Strikes through displayed metrics that are all null
-                  return <MenuItem value={val} key={val}><p className="inline">{dataListPretty[index]}</p></MenuItem>;
+                  return <MenuItem value={val} key={val}><p className="inline text-xl">{dataListPretty[index]}</p></MenuItem>;
                 } else {
-                  return <MenuItem value={val} key={val}><p className="inline line-through">{dataListPretty[index]}</p></MenuItem>;
+                  return <MenuItem value={val} key={val}><p className="inline line-through text-xl">{dataListPretty[index]}</p></MenuItem>;
                 }
               })}
-              value={props.state.selected?.metric as string[]}
+              selected={props.state.selected?.metric as string[]}
               onChange={(e) => { handleMetricDropdownChange(e as SelectChangeEvent<(keyof datum)[]>, props.state); }}
             />
           </div>
@@ -59,12 +59,15 @@ export default function Dashboard() {
 
         <div className="basis-full p-2">
           <LineChart
-            // dataset={}
             xAxis={[
               {
                 dataKey: "date",
                 scaleType: "time",
-                data: props.state.data?.map((val) => formatDate(val.date as string)).reverse()
+                data: props.state.data?.map((val) => formatDate(val.date as string)).reverse(),
+                valueFormatter: (date) =>
+                  date instanceof Date
+                    ? date.toLocaleDateString() 
+                    : date,
               }
             ]}
             series={
@@ -93,7 +96,7 @@ export default function Dashboard() {
   function StateButton(props: StateButtonProps) {
     return (
       <button
-        className="px-4 py-1 m-2 self-center border-2 rounded-md border-sky-500 bg-sky-700 hover:bg-blue-600 hover:border-blue-500"
+        className="px-4 py-1 m-2 self-center border-2 rounded-md text-neutral-900 border-sky-500 bg-sky-100 hover:bg-blue-600 hover:border-blue-500"
         onClick={props.onClick}
       >
         {props.buttonText}
@@ -102,8 +105,8 @@ export default function Dashboard() {
   }
 
   interface DropDownProps {
-    items: React.ReactNode[],
-    value: string[],
+    items: React.ReactNode[], // of the form [<MenuItem value={}>...</MenuItem>...]
+    selected: string[],
     onChange: (e: SelectChangeEvent<string[]>) => void,
   }
 
@@ -111,14 +114,14 @@ export default function Dashboard() {
   function Dropdown(props: DropDownProps) {
 
     return (
-      <div className="m-2 border-2 rounded-md border-sky-500 bg-sky-700">
+      <div className="m-2 border-2 rounded-md border-sky-500 bg-sky-100">
         <FormControl fullWidth>
-          <InputLabel className="bg-sky-700" id="demo-simple-select-label"><div className="px-2 text-xl">Metrics</div></InputLabel>
+          <InputLabel className="bg-sky-100 rounded-md" id="demo-simple-select-label"><div className="px-2 text-xl text-neutral-900">Metrics</div></InputLabel>
           <Select
             labelId="demo-simple-select-label"
             id="demo-simple-select"
             multiple
-            value={props.value}
+            value={props.selected}
             onChange={props.onChange}
           >
             {props.items}
