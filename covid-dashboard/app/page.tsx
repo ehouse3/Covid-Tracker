@@ -51,9 +51,9 @@ export default function Dashboard() {
           </div>
           <h2 className="w-1/3 flex flex-row flex-nowrap justify-center self-center text-5xl">{props.state.abbrev}</h2>
           <div className="w-1/3 px-2 flex flex-row flex-nowrap justify-end">
-            <StateButton onClick={() => ascendState(props.state)} buttonText="UP" />
-            <StateButton onClick={() => descendState(props.state)} buttonText="DOWN" />
-            <StateButton onClick={() => removeState(props.state)} buttonText="DELETE" />
+            <Button onClick={() => ascendState(props.state)} buttonText="UP" ></Button>
+            <Button onClick={() => descendState(props.state)} buttonText="DOWN" ></Button>
+            <Button onClick={() => removeState(props.state)} buttonText="DELETE" ></Button>
           </div>
         </div>
 
@@ -88,16 +88,18 @@ export default function Dashboard() {
   }
 
   interface StateButtonProps {
-    onClick: () => void,
-    buttonText: string
+    onClick?: () => void,
+    buttonText?: string,
+    type?: "button" | "submit" | "reset",
   }
 
-  /** StateButton Component that displays a button with callback function for press. */
-  function StateButton(props: StateButtonProps) {
+  /** Button Component that displays a button with callback function for press. */
+  function Button(props: StateButtonProps) {
     return (
       <button
-        className="px-4 py-1 m-2 self-center border-3 rounded-md border-(--secondary-border) bg-(--secondary) text-(--text-dark) hover:bg-(--secondary-hover) hover:border-(--secondary-border-hover)"
+        className="px-3 m-2 self-center border-3 rounded-md border-(--secondary-border) bg-(--secondary) text-(--text-dark) hover:bg-(--secondary-hover) hover:border-(--secondary-border-hover)"
         onClick={props.onClick}
+        type={props.type}
       >
         {props.buttonText}
       </button>
@@ -212,16 +214,10 @@ export default function Dashboard() {
               name="stateAbbrev"
               className="px-2 m-1 rounded-md text-(--text-dark) bg-(--tertiary)"
               type="text" placeholder="e.g. NY" autoCapitalize="characters" />
-            <button
-              className="px-2 m-1 border-3 rounded-md border-(--secondary-border) bg-(--secondary) text-(--text-dark) hover:bg-(--secondary-hover) hover:border-(--secondary-border-hover)"
-              type="submit"
-            >
-              ADD STATE
-            </button>
+            <Button type="submit" buttonText="ADD STATE"></Button>
           </form>
         </div>
       </div>
-
       {states.map((state) => state.id !== undefined && <StateItem key={state.id} state={state} ascendState={ascendState} descendState={descendState} removeState={removeState} />)}
     </main>
   );
