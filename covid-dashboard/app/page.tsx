@@ -34,15 +34,15 @@ export default function Dashboard() {
     };
 
     return (
-      <div key={props.state.id} className="flex flex-row justify-between flex-wrap bg-sky-800 rounded-xl p-2 my-7 border-4">
+      <div key={props.state.id} className="flex flex-row justify-between flex-wrap bg-(--foreground) rounded-xl p-2 my-7 border-0 border-(--foreground-border)">
         <div className="flex flex-row w-full">
           <div className="w-1/3">
             <Dropdown
               items={dataList.map((val, index) => { // List of metrics to choose
                 if (props.state.nullMetrics && props.state.nullMetrics[val as keyof (typeof props.state.nullMetrics)]) { // Strikes through displayed metrics that are all null
-                  return <MenuItem value={val} key={val}><p className="inline text-xl">{dataListPretty[index]}</p></MenuItem>;
+                  return <MenuItem value={val} key={val}><p className="inline font-mono font-medium text-xl">{dataListPretty[index]}</p></MenuItem>;
                 } else {
-                  return <MenuItem value={val} key={val}><p className="inline line-through text-xl">{dataListPretty[index]}</p></MenuItem>;
+                  return <MenuItem value={val} key={val}><p className="inline font-mono font-medium line-through text-xl">{dataListPretty[index]}</p></MenuItem>;
                 }
               })}
               selected={props.state.selected?.metric as string[]}
@@ -66,7 +66,7 @@ export default function Dashboard() {
                 data: props.state.data?.map((val) => formatDate(val.date as string)).reverse(),
                 valueFormatter: (date) =>
                   date instanceof Date
-                    ? date.toLocaleDateString() 
+                    ? date.toLocaleDateString()
                     : date,
               }
             ]}
@@ -96,7 +96,7 @@ export default function Dashboard() {
   function StateButton(props: StateButtonProps) {
     return (
       <button
-        className="px-4 py-1 m-2 self-center border-2 rounded-md text-neutral-900 border-sky-500 bg-sky-100 hover:bg-blue-600 hover:border-blue-500"
+        className="px-4 py-1 m-2 self-center border-3 rounded-md border-(--secondary-border) bg-(--secondary) text-(--text-dark) hover:bg-(--secondary-hover) hover:border-(--secondary-border-hover)"
         onClick={props.onClick}
       >
         {props.buttonText}
@@ -112,11 +112,10 @@ export default function Dashboard() {
 
   /** Dropdown component to select which metrics of data to display */
   function Dropdown(props: DropDownProps) {
-
     return (
-      <div className="m-2 border-2 rounded-md border-sky-500 bg-sky-100">
+      <div className="m-2 rounded-md border-(--tertiary-border) bg-(--tertiary)">
         <FormControl fullWidth>
-          <InputLabel className="bg-sky-100 rounded-md" id="demo-simple-select-label"><div className="px-2 text-xl text-neutral-900">Metrics</div></InputLabel>
+          <InputLabel className="bg-(--tertiary) rounded-md" id="demo-simple-select-label"><div className="px-2 text-xl font-mono text-(--text-dark)">Metrics</div></InputLabel>
           <Select
             labelId="demo-simple-select-label"
             id="demo-simple-select"
@@ -140,10 +139,10 @@ export default function Dashboard() {
     if (newStates[sIndex].selected === undefined) { return }
 
     // Assigning new selected metrics and prettyMetrics
-    newStates[sIndex].selected.metric = metrics; 
+    newStates[sIndex].selected.metric = metrics;
     metrics.forEach((metric, i) => {
       // set selected.prettyMetric using index of selected.metric
-      const dataIndex = dataList.findIndex(m => m === metric); 
+      const dataIndex = dataList.findIndex(m => m === metric);
       if (newStates[sIndex].selected === undefined) { return }
       newStates[sIndex].selected.prettyMetric[i] = dataListPretty[dataIndex];
     })
@@ -204,27 +203,26 @@ export default function Dashboard() {
 
   return (
     <main className="flex flex-row flex-wrap items-center mx-10 my-10 text-2xl font-mono font-medium tracking-normal">
-      <div className="flex flex-row basis-full justify-between bg-sky-800 p-1 border-4 rounded-xl">
+      <div className="flex flex-row basis-full justify-between bg-(--foreground) p-1 border-4 rounded-xl border-(--foreground-border)">
         <div className="w-1/3"></div>
         <h1 className="w-1/3 text-center text-5xl font-bold">Covid Tracking Dashboard</h1>
         <div className="w-1/3 flex flex-box justify-end">
           <form onSubmit={handleSubmit}>
             <input
-              name='stateAbbrev'
-              className="px-2 m-1 rounded-md text-neutral-900 bg-sky-50"
+              name="stateAbbrev"
+              className="px-2 m-1 rounded-md text-(--text-dark) bg-(--tertiary)"
               type="text" placeholder="e.g. NY" autoCapitalize="characters" />
             <button
-              className="px-2 m-1 border-2 rounded-md border-sky-500 bg-sky-700 hover:bg-blue-600 hover:border-blue-500"
+              className="px-2 m-1 border-3 rounded-md border-(--secondary-border) bg-(--secondary) text-(--text-dark) hover:bg-(--secondary-hover) hover:border-(--secondary-border-hover)"
               type="submit"
             >
-              Add State
+              ADD STATE
             </button>
           </form>
         </div>
       </div>
-      <div className="basis-full">
-        {states.map((state) => state.id !== undefined && <StateItem key={state.id} state={state} ascendState={ascendState} descendState={descendState} removeState={removeState} />)}
-      </div>
+
+      {states.map((state) => state.id !== undefined && <StateItem key={state.id} state={state} ascendState={ascendState} descendState={descendState} removeState={removeState} />)}
     </main>
   );
 }
