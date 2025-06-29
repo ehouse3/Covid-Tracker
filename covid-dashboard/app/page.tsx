@@ -34,22 +34,22 @@ export default function Dashboard() {
     };
 
     return (
-      <div key={props.state.id} className="flex flex-row justify-between flex-wrap bg-(--foreground) rounded-xl p-2 my-7 border-0 border-(--foreground-border)">
+      <div key={props.state.id} className="flex flex-row justify-between flex-wrap bg-foreground rounded-xl p-2 my-7 border-0 border-foreground-border">
         <div className="flex flex-row w-full">
           <div className="w-1/3">
             <Dropdown
               items={dataList.map((val, index) => { // List of metrics to choose
                 if (props.state.nullMetrics && props.state.nullMetrics[val as keyof (typeof props.state.nullMetrics)]) { // Strikes through displayed metrics that are all null
-                  return <MenuItem value={val} key={val}><p className="inline font-mono font-medium text-xl">{dataListPretty[index]}</p></MenuItem>;
+                  return <MenuItem value={val} key={val}><p className="inline font-medium text-xl">{dataListPretty[index]}</p></MenuItem>;
                 } else {
-                  return <MenuItem value={val} key={val}><p className="inline font-mono font-medium line-through text-xl">{dataListPretty[index]}</p></MenuItem>;
+                  return <MenuItem value={val} key={val}><p className="inline font-medium line-through text-xl">{dataListPretty[index]}</p></MenuItem>;
                 }
               })}
               selected={props.state.selected?.metric as string[]}
               onChange={(e) => { handleMetricDropdownChange(e as SelectChangeEvent<(keyof datum)[]>, props.state); }}
             />
           </div>
-          <h2 className="w-1/3 flex flex-row flex-nowrap justify-center self-center text-5xl">{props.state.abbrev}</h2>
+          <h2 className="w-1/3 flex flex-row flex-nowrap justify-center self-center font-bold text-5xl">{props.state.abbrev}</h2>
           <div className="w-1/3 px-2 flex flex-row flex-nowrap justify-end">
             <Button onClick={() => ascendState(props.state)} buttonText="UP" ></Button>
             <Button onClick={() => descendState(props.state)} buttonText="DOWN" ></Button>
@@ -97,7 +97,7 @@ export default function Dashboard() {
   function Button(props: StateButtonProps) {
     return (
       <button
-        className="px-3 m-2 self-center border-3 rounded-md border-(--secondary-border) bg-(--secondary) text-(--text-dark) hover:bg-(--secondary-hover) hover:border-(--secondary-border-hover)"
+        className="px-3 m-2 self-center border-3 rounded-md border-accent-border bg-accent text-text-contrast hover:bg-accent-hover hover:border-accent-border-hover"
         onClick={props.onClick}
         type={props.type}
       >
@@ -115,9 +115,9 @@ export default function Dashboard() {
   /** Dropdown component to select which metrics of data to display */
   function Dropdown(props: DropDownProps) {
     return (
-      <div className="m-2 rounded-md border-(--tertiary-border) bg-(--tertiary)">
+      <div className="m-2 rounded-md border-tertiary-border bg-tertiary">
         <FormControl fullWidth>
-          <InputLabel className="bg-(--tertiary) rounded-md" id="demo-simple-select-label"><div className="px-2 text-xl font-mono text-(--text-dark)">Metrics</div></InputLabel>
+          <InputLabel className="bg-tertiary rounded-md" id="demo-simple-select-label"><div className="px-2 text-xl text-text-contrast">Metrics</div></InputLabel>
           <Select
             labelId="demo-simple-select-label"
             id="demo-simple-select"
@@ -204,15 +204,15 @@ export default function Dashboard() {
   }
 
   return (
-    <main className="flex flex-row flex-wrap items-center mx-10 my-10 text-2xl font-mono font-medium tracking-normal">
-      <div className="flex flex-row basis-full justify-between bg-(--foreground) p-1 border-4 rounded-xl border-(--foreground-border)">
+    <main className="flex flex-row flex-wrap items-center mx-10 my-10 text-2xl font-main">
+      <div className="flex flex-row basis-full justify-between bg-foreground p-1 border-4 rounded-xl border-foreground-border">
         <div className="w-1/3"></div>
         <h1 className="w-1/3 text-center text-5xl font-bold">Covid Tracking Dashboard</h1>
         <div className="w-1/3 flex flex-box justify-end">
           <form onSubmit={handleSubmit}>
             <input
               name="stateAbbrev"
-              className="px-2 m-1 rounded-md text-(--text-dark) bg-(--tertiary)"
+              className="px-2 m-1 rounded-md text-text-contrast bg-tertiary"
               type="text" placeholder="e.g. NY" autoCapitalize="characters" />
             <Button type="submit" buttonText="ADD STATE"></Button>
           </form>

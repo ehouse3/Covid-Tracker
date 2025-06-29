@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { Geist_Mono } from "next/font/google";
+import { Roboto } from "next/font/google";
 import "./globals.css";
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const robotoFont = Roboto({
   subsets: ["latin"],
+  weight: "400",
+  variable: "--font-roboto",
 });
 
 export const metadata: Metadata = {
@@ -19,7 +20,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistMono.variable} antialiased`}>
+      {/* <body className=' font-sans font-2xl antialiased'> */}
+      <body className={`${robotoFont.variable} antialiased bg-background`}>
         {children}
       </body>
     </html>
