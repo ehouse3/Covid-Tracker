@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef } from 'react';
+import { useState, useRef, ReactElement } from 'react';
 
 import { LineChart } from "@mui/x-charts";
 import Select, { SelectChangeEvent } from '@mui/material/Select';
@@ -10,10 +10,10 @@ import FormControl from '@mui/material/FormControl';
 import { State, datum, fetchState } from "../parser";
 
 export default function Dashboard() {
-  const nextId = useRef(0);
-  const [states, setStates] = useState<State[]>([]);
+  const nextId = useRef(0); // Id to assign any newly made state
+  const [states, setStates] = useState<State[]>([]); // React state to store list of rendered State components
 
-  // Metrics List and Metrics List to be displayed of data
+  // List and Display List of metrics in order, except date and state (always required for rendering)
   const dataList: (keyof datum)[] = ["death", "deathConfirmed", "deathIncrease", "deathProbable", "hospitalized", "hospitalizedCumulative", "hospitalizedCurrently", "hospitalizedIncrease", "inIcuCumulative", "inIcuCurrently", "negative", "negativeIncrease", "negativeTestsAntibody", "negativeTestsPeopleAntibody", "negativeTestsViral", "onVentilatorCumulative", "onVentilatorCurrently", "positive", "positiveCasesViral", "positiveIncrease", "positiveScore", "positiveTestsAntibody", "positiveTestsAntigen", "positiveTestsPeopleAntibody", "positiveTestsPeopleAntigen", "positiveTestsViral", "recovered", "totalTestEncountersViral", "totalTestEncountersViralIncrease", "totalTestResults", "totalTestResultsIncrease", "totalTestsAntibody", "totalTestsAntigen", "totalTestsPeopleAntibody", "totalTestsPeopleAntigen", "totalTestsPeopleViral", "totalTestsPeopleViralIncrease", "totalTestsViral", "totalTestsViralIncrease"];
   const dataListPretty: string[] = ["Deaths", "Confirmed Deaths", "Increased Deaths", "Probable Deaths", "Hospitalizations", "Cumulative Hospitalizations", "Currently Hospitalized", "Increase Hospitalizations", "Cumulative in ICU", "Currently in ICU ", "Negatives", "Increase Negatives", "Negative Antibody Tests", "Negative Antibody Tests People", "Negative Viral Tests", "Cumulativly on Ventilator", "Currently on Ventilator", "Positive", "Positive Viral Cases", "Positive Increase", "Positive Score", "Positive Tests Antibody", "Positive Antigen Tests", "Positive Antibody Tests People", "Positive Antigen Tests Peopel", "Positive Viral Tests", "Recovered", "Total Viral Test Encounters", "Total Viral Test Encounters Increase", "Total Test Results", "Total Test Results Increase", "Total Antibody Tests", "Total Antigen Tests", "Total Antibody Tests People ", "Total Antigen Tests People", "Total Viral Tests People ", "Total Increase Viral Tests People", "Total Viral Tests", "Total Increase Viral Tests"];
 
@@ -23,31 +23,26 @@ export default function Dashboard() {
     descendState: (s: State) => void,
     removeState: (s: State) => void
   }
-
-  /** StateItem Component that displays a single state. Includes title, metric selector, movement buttons and graph */
-  function StateItem(props: StateItemProps) { // Being called multiple times... useEffect might fix?
-    /** Returns datum.date in "Mon Year" format */
-    // console.log(props.state);
-    const formatDate = (d: string) => {
-      const date = new Date(d);
-      return date;
-    };
-
+  /** Component for a single state. Includes Name, metric selector, movement buttons and graph */
+  function StateItem(props: StateItemProps): ReactElement {
     return (
       <div key={props.state.id} className="flex flex-row justify-between flex-wrap bg-foreground rounded-xl p-2 my-7 border-0 border-foreground-border">
         <div className="flex flex-row w-full">
           <div className="w-1/3">
             <Dropdown
-              items={dataList.map((val, index) => { // List of metrics to choose
-                if (props.state.nullMetrics && props.state.nullMetrics[val as keyof (typeof props.state.nullMetrics)]) { // Strikes through displayed metrics that are all null
-                  return <MenuItem value={val} key={val}><p className="inline font-medium text-xl">{dataListPretty[index]}</p></MenuItem>;
-                } else {
-                  return <MenuItem value={val} key={val}><p className="inline font-medium line-through text-xl">{dataListPretty[index]}</p></MenuItem>;
-                }
+              items={dataList.map((metric, index) => {
+                return ( // List of metrics to choose
+                  <MenuItem value={metric} key={metric}>
+                    <StrikeThroughConditional
+                      condition={props.state.nullMetrics && props.state.nullMetrics[metric as keyof (typeof props.state.nullMetrics)]}
+                      text={dataListPretty[index]}
+                    ></StrikeThroughConditional>
+                  </MenuItem>
+                )
               })}
               selected={props.state.selected?.metric as string[]}
               onChange={(e) => { handleMetricDropdownChange(e as SelectChangeEvent<(keyof datum)[]>, props.state); }}
-            />
+            ></Dropdown>
           </div>
           <h2 className="w-1/3 flex flex-row flex-nowrap justify-center self-center font-bold text-5xl">{props.state.abbrev}</h2>
           <div className="w-1/3 px-2 flex flex-row flex-nowrap justify-end">
@@ -63,7 +58,7 @@ export default function Dashboard() {
               {
                 dataKey: "date",
                 scaleType: "time",
-                data: props.state.data?.map((val) => formatDate(val.date as string)).reverse(),
+                data: props.state.data?.map((val) => new Date(val.date)).reverse(),
                 valueFormatter: (date) =>
                   date instanceof Date
                     ? date.toLocaleDateString()
@@ -81,7 +76,7 @@ export default function Dashboard() {
               ))
             }
             height={300}
-          />
+          ></LineChart>
         </div>
       </div>
     )
@@ -92,9 +87,8 @@ export default function Dashboard() {
     buttonText?: string,
     type?: "button" | "submit" | "reset",
   }
-
   /** Button Component that displays a button with callback function for press. */
-  function Button(props: StateButtonProps) {
+  function Button(props: StateButtonProps): ReactElement {
     return (
       <button
         className="px-3 m-2 self-center border-3 rounded-md border-accent-border bg-accent text-text-contrast hover:bg-accent-hover hover:border-accent-border-hover"
@@ -111,9 +105,8 @@ export default function Dashboard() {
     selected: string[],
     onChange: (e: SelectChangeEvent<string[]>) => void,
   }
-
   /** Dropdown component to select which metrics of data to display */
-  function Dropdown(props: DropDownProps) {
+  function Dropdown(props: DropDownProps): ReactElement {
     return (
       <div className="m-2 rounded-md border-tertiary-border bg-tertiary">
         <FormControl fullWidth>
@@ -133,7 +126,7 @@ export default function Dashboard() {
   }
 
   /** Handles onChange for MetricDropDownComponent. Updates corresponding state's selected metrics */
-  function handleMetricDropdownChange(e: SelectChangeEvent<(keyof datum)[]>, s: State) {
+  function handleMetricDropdownChange(e: SelectChangeEvent<(keyof datum)[]>, s: State): void {
     const metrics = e.target.value as (keyof datum)[];
     const sIndex = states.findIndex(st => st.id === s.id);
     const newStates = [...states];
@@ -152,8 +145,21 @@ export default function Dashboard() {
     setStates(newStates);
   }
 
+  interface strikeThroughConditionalProps {
+    condition?: boolean,
+    text?: string,
+  }
+  /** Component that adds strikethrough to the provided text if condition is false */
+  function StrikeThroughConditional(props: strikeThroughConditionalProps): ReactElement {
+    if (props.condition) {
+      return (<p className="inline font-medium text-xl">{props.text}</p>);
+    } else {
+      return (<p className="inline font-medium line-through text-xl">{props.text}</p>);
+    }
+  }
+
   /** Adds state to active state list w/ id. Fetches state's data as well */
-  async function addState(s: State) {
+  async function addState(s: State): Promise<void> {
     if (states.length > 6) { return; }
 
     s = await fetchState(s);
@@ -163,12 +169,12 @@ export default function Dashboard() {
   }
 
   /** Removes active state from state list */
-  function removeState(s: State) {
+  function removeState(s: State): void {
     setStates(states.filter(st => st.id !== s.id));
   }
 
   /** Moves displayed state up one position */
-  function ascendState(s: State) {
+  function ascendState(s: State): void {
     const index = states.findIndex(st => st.id === s.id);
     if (index !== 0) {
       const newStates = [...states];
@@ -180,7 +186,7 @@ export default function Dashboard() {
   }
 
   /** Moves displayed state down one position */
-  function descendState(s: State) {
+  function descendState(s: State): void {
     const index = states.findIndex(st => st.id === s.id);
     if (index < states.length - 1) {
       const newStates = [...states];
@@ -193,7 +199,7 @@ export default function Dashboard() {
 
   const acceptStates = ["AK", "AL", "AR", "AS", "AZ", "CA", "CO", "CT", "DC", "DE", "FL", "GA", "GU", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA", "MA", "MD", "ME", "MI", "MN", "MO", "MP", "MS", "MT", "NC", "ND", "NE", "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "PR", "RI", "SC", "SD", "TN", "TX", "UT", "VA", "VI", "VT", "WA", "WI", "WV", "WY"];
   /** Handles submit event, calling addState if appropriate */
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>): void {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const stateAbbrev = (formData.get("stateAbbrev") as string).toUpperCase();
@@ -213,12 +219,13 @@ export default function Dashboard() {
             <input
               name="stateAbbrev"
               className="px-2 m-1 rounded-md text-text-contrast bg-tertiary"
-              type="text" placeholder="e.g. NY" autoCapitalize="characters" />
+              type="text" placeholder="e.g. NY" autoCapitalize="characters">
+            </input>
             <Button type="submit" buttonText="ADD STATE"></Button>
           </form>
         </div>
       </div>
-      {states.map((state) => state.id !== undefined && <StateItem key={state.id} state={state} ascendState={ascendState} descendState={descendState} removeState={removeState} />)}
+      {states.map((state) => state.id !== undefined && <StateItem key={state.id} state={state} ascendState={ascendState} descendState={descendState} removeState={removeState} ></StateItem>)}
     </main>
   );
 }

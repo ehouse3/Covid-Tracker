@@ -137,7 +137,7 @@ export interface State {
     abbrev: string,
     data?: datum[], // array of state's data from csv
     selected?: { metric: (keyof datum)[], prettyMetric: string[] } // Selected data metrics and pretty metrics
-    nullMetrics?: nullMetrics, // prop is true if all of that metric's props is Null, false otherwise
+    nullMetrics?: nullMetrics, // property is true if all of that metric's values is Null, false otherwise
 }
 
 
