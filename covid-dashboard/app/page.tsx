@@ -14,8 +14,11 @@ export default function Dashboard() {
   const [states, setStates] = useState<State[]>([]); // React state to store list of rendered State components
 
   // List and Display List of metrics in order, except date and state (always required for rendering)
-  const dataList: (keyof datum)[] = ["death", "deathConfirmed", "deathIncrease", "deathProbable", "hospitalized", "hospitalizedCumulative", "hospitalizedCurrently", "hospitalizedIncrease", "inIcuCumulative", "inIcuCurrently", "negative", "negativeIncrease", "negativeTestsAntibody", "negativeTestsPeopleAntibody", "negativeTestsViral", "onVentilatorCumulative", "onVentilatorCurrently", "positive", "positiveCasesViral", "positiveIncrease", "positiveScore", "positiveTestsAntibody", "positiveTestsAntigen", "positiveTestsPeopleAntibody", "positiveTestsPeopleAntigen", "positiveTestsViral", "recovered", "totalTestEncountersViral", "totalTestEncountersViralIncrease", "totalTestResults", "totalTestResultsIncrease", "totalTestsAntibody", "totalTestsAntigen", "totalTestsPeopleAntibody", "totalTestsPeopleAntigen", "totalTestsPeopleViral", "totalTestsPeopleViralIncrease", "totalTestsViral", "totalTestsViralIncrease"];
-  const dataListPretty: string[] = ["Deaths", "Confirmed Deaths", "Increased Deaths", "Probable Deaths", "Hospitalizations", "Cumulative Hospitalizations", "Currently Hospitalized", "Increase Hospitalizations", "Cumulative in ICU", "Currently in ICU ", "Negatives", "Increase Negatives", "Negative Antibody Tests", "Negative Antibody Tests People", "Negative Viral Tests", "Cumulativly on Ventilator", "Currently on Ventilator", "Positive", "Positive Viral Cases", "Positive Increase", "Positive Score", "Positive Tests Antibody", "Positive Antigen Tests", "Positive Antibody Tests People", "Positive Antigen Tests Peopel", "Positive Viral Tests", "Recovered", "Total Viral Test Encounters", "Total Viral Test Encounters Increase", "Total Test Results", "Total Test Results Increase", "Total Antibody Tests", "Total Antigen Tests", "Total Antibody Tests People ", "Total Antigen Tests People", "Total Viral Tests People ", "Total Increase Viral Tests People", "Total Viral Tests", "Total Increase Viral Tests"];
+  const metricList: (keyof datum)[] = ["death", "deathConfirmed", "deathIncrease", "deathProbable", "hospitalized", "hospitalizedCumulative", "hospitalizedCurrently", "hospitalizedIncrease", "inIcuCumulative", "inIcuCurrently", "negative", "negativeIncrease", "negativeTestsAntibody", "negativeTestsPeopleAntibody", "negativeTestsViral", "onVentilatorCumulative", "onVentilatorCurrently", "positive", "positiveCasesViral", "positiveIncrease", "positiveScore", "positiveTestsAntibody", "positiveTestsAntigen", "positiveTestsPeopleAntibody", "positiveTestsPeopleAntigen", "positiveTestsViral", "recovered", "totalTestEncountersViral", "totalTestEncountersViralIncrease", "totalTestResults", "totalTestResultsIncrease", "totalTestsAntibody", "totalTestsAntigen", "totalTestsPeopleAntibody", "totalTestsPeopleAntigen", "totalTestsPeopleViral", "totalTestsPeopleViralIncrease", "totalTestsViral", "totalTestsViralIncrease"];
+  const metricListPretty: string[] = ["Deaths", "Confirmed Deaths", "Increased Deaths", "Probable Deaths", "Hospitalizations", "Cumulative Hospitalizations", "Currently Hospitalized", "Increase Hospitalizations", "Cumulative in ICU", "Currently in ICU ", "Negatives", "Increase Negatives", "Negative Antibody Tests", "Negative Antibody Tests People", "Negative Viral Tests", "Cumulativly on Ventilator", "Currently on Ventilator", "Positive", "Positive Viral Cases", "Positive Increase", "Positive Score", "Positive Tests Antibody", "Positive Antigen Tests", "Positive Antibody Tests People", "Positive Antigen Tests Peopel", "Positive Viral Tests", "Recovered", "Total Viral Test Encounters", "Total Viral Test Encounters Increase", "Total Test Results", "Total Test Results Increase", "Total Antibody Tests", "Total Antigen Tests", "Total Antibody Tests People ", "Total Antigen Tests People", "Total Viral Tests People ", "Total Increase Viral Tests People", "Total Viral Tests", "Total Increase Viral Tests"];
+
+  // Map of state's abbreviations to state's fullname
+  const abbrevMap = new Map<string, string>([["AL", "Alabama"],["AK", "Alaska"],["AZ", "Arizona"],["AR", "Arkansas"],["CA", "California"],["CO", "Colorado"],["CT", "Connecticut"],["DE", "Delaware"],["FL", "Florida"],["GA", "Georgia"],["HI", "Hawaii"],["ID", "Idaho"],["IL", "Illinois"],["IN", "Indiana"],["IA", "Iowa"],["KS", "Kansas"],["KY", "Kentucky"],["LA", "Louisiana"],["ME", "Maine"],["MD", "Maryland"],["MA", "Massachusetts"],["MI", "Michigan"],["MN", "Minnesota"],["MS", "Mississippi"],["MO", "Missouri"],["MT", "Montana"],["NE", "Nebraska"],["NV", "Nevada"],["NH", "New Hampshire"],["NJ", "New Jersey"],["NM", "New Mexico"],["NY", "New York"],["NC", "North Carolina"],["ND", "North Dakota"],["OH", "Ohio"],["OK", "Oklahoma"],["OR", "Oregon"],["PA", "Pennsylvania"],["RI", "Rhode Island"],["SC", "South Carolina"],["SD", "South Dakota"],["TN", "Tennessee"],["TX", "Texas"],["UT", "Utah"],["VT", "Vermont"],["VA", "Virginia"],["WA", "Washington"],["WV", "West Virginia"],["WI", "Wisconsin"],["WY", "Wyoming"],]);
 
   interface StateItemProps {
     state: State,
@@ -30,12 +33,12 @@ export default function Dashboard() {
         <div className="flex flex-row w-full">
           <div className="w-1/3">
             <Dropdown
-              items={dataList.map((metric, index) => {
+              items={metricList.map((metric, index) => {
                 return ( // List of metrics to choose
                   <MenuItem value={metric} key={metric}>
                     <StrikeThroughConditional
-                      condition={props.state.nullMetrics && props.state.nullMetrics[metric as keyof (typeof props.state.nullMetrics)]}
-                      text={dataListPretty[index]}
+                      condition={!(props.state.nullMetrics && props.state.nullMetrics[metric as keyof (typeof props.state.nullMetrics)])}
+                      text={metricListPretty[index]}
                     ></StrikeThroughConditional>
                   </MenuItem>
                 )
@@ -44,7 +47,7 @@ export default function Dashboard() {
               onChange={(e) => { handleMetricDropdownChange(e as SelectChangeEvent<(keyof datum)[]>, props.state); }}
             ></Dropdown>
           </div>
-          <h2 className="w-1/3 flex flex-row flex-nowrap justify-center self-center font-bold text-5xl">{props.state.abbrev}</h2>
+          <h2 className="w-1/3 flex flex-row flex-nowrap justify-center self-center font-bold text-5xl">{abbrevMap.get(props.state.abbrev)}</h2>
           <div className="w-1/3 px-2 flex flex-row flex-nowrap justify-end">
             <Button onClick={() => ascendState(props.state)} buttonText="UP" ></Button>
             <Button onClick={() => descendState(props.state)} buttonText="DOWN" ></Button>
@@ -137,24 +140,24 @@ export default function Dashboard() {
     newStates[sIndex].selected.metric = metrics;
     metrics.forEach((metric, i) => {
       // set selected.prettyMetric using index of selected.metric
-      const dataIndex = dataList.findIndex(m => m === metric);
+      const dataIndex = metricList.findIndex(m => m === metric);
       if (newStates[sIndex].selected === undefined) { return }
-      newStates[sIndex].selected.prettyMetric[i] = dataListPretty[dataIndex];
+      newStates[sIndex].selected.prettyMetric[i] = metricListPretty[dataIndex];
     })
 
     setStates(newStates);
   }
 
-  interface strikeThroughConditionalProps {
+  interface StrikeThroughConditionalProps {
     condition?: boolean,
     text?: string,
   }
-  /** Component that adds strikethrough to the provided text if condition is false */
-  function StrikeThroughConditional(props: strikeThroughConditionalProps): ReactElement {
+  /** Component that adds strikethrough to the provided text if condition is true, otherwise returns text */
+  function StrikeThroughConditional(props: StrikeThroughConditionalProps): ReactElement {
     if (props.condition) {
-      return (<p className="inline font-medium text-xl">{props.text}</p>);
-    } else {
       return (<p className="inline font-medium line-through text-xl">{props.text}</p>);
+    } else {
+      return (<p className="inline font-medium text-xl">{props.text}</p>);
     }
   }
 
