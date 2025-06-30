@@ -18,7 +18,7 @@ export default function Dashboard() {
   const metricListPretty: string[] = ["Deaths", "Confirmed Deaths", "Increased Deaths", "Probable Deaths", "Hospitalizations", "Cumulative Hospitalizations", "Currently Hospitalized", "Increase Hospitalizations", "Cumulative in ICU", "Currently in ICU ", "Negatives", "Increase Negatives", "Negative Antibody Tests", "Negative Antibody Tests People", "Negative Viral Tests", "Cumulativly on Ventilator", "Currently on Ventilator", "Positive", "Positive Viral Cases", "Positive Increase", "Positive Score", "Positive Tests Antibody", "Positive Antigen Tests", "Positive Antibody Tests People", "Positive Antigen Tests Peopel", "Positive Viral Tests", "Recovered", "Total Viral Test Encounters", "Total Viral Test Encounters Increase", "Total Test Results", "Total Test Results Increase", "Total Antibody Tests", "Total Antigen Tests", "Total Antibody Tests People ", "Total Antigen Tests People", "Total Viral Tests People ", "Total Increase Viral Tests People", "Total Viral Tests", "Total Increase Viral Tests"];
 
   // Map of state's abbreviations to state's fullname
-  const abbrevMap = new Map<string, string>([["AL", "Alabama"],["AK", "Alaska"],["AZ", "Arizona"],["AR", "Arkansas"],["CA", "California"],["CO", "Colorado"],["CT", "Connecticut"],["DE", "Delaware"],["FL", "Florida"],["GA", "Georgia"],["HI", "Hawaii"],["ID", "Idaho"],["IL", "Illinois"],["IN", "Indiana"],["IA", "Iowa"],["KS", "Kansas"],["KY", "Kentucky"],["LA", "Louisiana"],["ME", "Maine"],["MD", "Maryland"],["MA", "Massachusetts"],["MI", "Michigan"],["MN", "Minnesota"],["MS", "Mississippi"],["MO", "Missouri"],["MT", "Montana"],["NE", "Nebraska"],["NV", "Nevada"],["NH", "New Hampshire"],["NJ", "New Jersey"],["NM", "New Mexico"],["NY", "New York"],["NC", "North Carolina"],["ND", "North Dakota"],["OH", "Ohio"],["OK", "Oklahoma"],["OR", "Oregon"],["PA", "Pennsylvania"],["RI", "Rhode Island"],["SC", "South Carolina"],["SD", "South Dakota"],["TN", "Tennessee"],["TX", "Texas"],["UT", "Utah"],["VT", "Vermont"],["VA", "Virginia"],["WA", "Washington"],["WV", "West Virginia"],["WI", "Wisconsin"],["WY", "Wyoming"],]);
+  const abbrevMap = new Map<string, string>([["AL", "Alabama"], ["AK", "Alaska"], ["AZ", "Arizona"], ["AR", "Arkansas"], ["CA", "California"], ["CO", "Colorado"], ["CT", "Connecticut"], ["DE", "Delaware"], ["FL", "Florida"], ["GA", "Georgia"], ["HI", "Hawaii"], ["ID", "Idaho"], ["IL", "Illinois"], ["IN", "Indiana"], ["IA", "Iowa"], ["KS", "Kansas"], ["KY", "Kentucky"], ["LA", "Louisiana"], ["ME", "Maine"], ["MD", "Maryland"], ["MA", "Massachusetts"], ["MI", "Michigan"], ["MN", "Minnesota"], ["MS", "Mississippi"], ["MO", "Missouri"], ["MT", "Montana"], ["NE", "Nebraska"], ["NV", "Nevada"], ["NH", "New Hampshire"], ["NJ", "New Jersey"], ["NM", "New Mexico"], ["NY", "New York"], ["NC", "North Carolina"], ["ND", "North Dakota"], ["OH", "Ohio"], ["OK", "Oklahoma"], ["OR", "Oregon"], ["PA", "Pennsylvania"], ["RI", "Rhode Island"], ["SC", "South Carolina"], ["SD", "South Dakota"], ["TN", "Tennessee"], ["TX", "Texas"], ["UT", "Utah"], ["VT", "Vermont"], ["VA", "Virginia"], ["WA", "Washington"], ["WV", "West Virginia"], ["WI", "Wisconsin"], ["WY", "Wyoming"],]);
 
   interface StateItemProps {
     state: State,
@@ -28,6 +28,7 @@ export default function Dashboard() {
   }
   /** Component for a single state. Includes Name, metric selector, movement buttons and graph */
   function StateItem(props: StateItemProps): ReactElement {
+    console.log("as Record",props.state.data as unknown as readonly Record<string, string | number | Date | null | undefined>[]);
     return (
       <div key={props.state.id} className="flex flex-row justify-between flex-wrap bg-foreground rounded-xl p-2 my-7 border-0 border-foreground-border">
         <div className="flex flex-row w-full">
@@ -57,11 +58,12 @@ export default function Dashboard() {
 
         <div className="basis-full p-2">
           <LineChart
+            dataset={props.state.data as unknown as readonly Record<string, string | number | Date | null | undefined>[]}
             xAxis={[
               {
                 dataKey: "date",
                 scaleType: "time",
-                data: props.state.data?.map((val) => new Date(val.date)).reverse(),
+                // data: props.state.data?.map((val) => new Date(val.date)).reverse(),
                 valueFormatter: (date) =>
                   date instanceof Date
                     ? date.toLocaleDateString()
@@ -69,14 +71,11 @@ export default function Dashboard() {
               }
             ]}
             series={
-              props.state.selected!.metric.map((metric, index) => ( // Returns chronoligically ordered array of data for each metric to display
-                {
-                  label: props.state.selected!.prettyMetric[index],
-                  data: props.state.data?.map((data) => {
-                    return data[metric] as number;
-                  }).reverse()
-                }
-              ))
+              props.state.selected?.metric.map((metric, index) => ({
+                label: props.state.selected?.prettyMetric[index],
+                dataKey: metric,
+                // data: props.state.data?.map((data) => data[metric] as number | null)?.reverse(),
+              })) ?? []
             }
             height={300}
           ></LineChart>
