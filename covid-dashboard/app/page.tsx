@@ -28,7 +28,6 @@ export default function Dashboard() {
   }
   /** Component for a single state. Includes Name, metric selector, movement buttons and graph */
   function StateItem(props: StateItemProps): ReactElement {
-    console.log("as Record",props.state.data as unknown as readonly Record<string, string | number | Date | null | undefined>[]);
     return (
       <div key={props.state.id} className="flex flex-row justify-between flex-wrap bg-foreground rounded-xl p-2 my-7 border-0 border-foreground-border">
         <div className="flex flex-row w-full">
@@ -58,25 +57,36 @@ export default function Dashboard() {
 
         <div className="basis-full p-2">
           <LineChart
-            dataset={props.state.data as unknown as readonly Record<string, string | number | Date | null | undefined>[]}
             xAxis={[
               {
                 dataKey: "date",
                 scaleType: "time",
-                // data: props.state.data?.map((val) => new Date(val.date)).reverse(),
+                data: props.state.data?.map((val) => new Date(val.date)).reverse(),
                 valueFormatter: (date) =>
                   date instanceof Date
                     ? date.toLocaleDateString()
                     : date,
               }
             ]}
-            series={
-              props.state.selected?.metric.map((metric, index) => ({
-                label: props.state.selected?.prettyMetric[index],
-                dataKey: metric,
-                // data: props.state.data?.map((data) => data[metric] as number | null)?.reverse(),
-              })) ?? []
-            }
+            series={[ // Generates values for each metric w/ label
+              ...props.state.selected!.metric.map((metric, index) => ( // Generate each metric's data
+                {
+                  label: props.state.selected!.prettyMetric[index],
+                  data: props.state.data?.map((data) => data[metric] as number | null).reverse() ?? [],
+                }
+              )),
+              ...props.state.selected!.metric.map((metric, index) => ( // Generate each metric's rolling average values
+                {
+                  label: props.state.selected!.prettyMetric[index] + " 7-day avg",
+                  data: calculateRollingAverage(
+                    props.state.data?.map((data) => data[metric] as number | null).reverse() ?? [],
+                    7
+                  ),
+                  // color: "#8884d8",
+                  style: { strokeDasharray: "4 2" },
+                }
+              )),
+            ]}
             height={300}
           ></LineChart>
         </div>
@@ -158,6 +168,27 @@ export default function Dashboard() {
     } else {
       return (<p className="inline font-medium text-xl">{props.text}</p>);
     }
+  }
+
+  /** Takes in array of values and window size (ex. 7). Returns populated array of window sized rolling averages  */
+  function calculateRollingAverage(data: (number | null | undefined)[], window: number): (number | null)[] {
+    const results: (number | null)[] = [];
+    for (let i = 0; i < data.length; i++) {
+      let sum: number = 0;
+      let count: number = 0;
+      for (let j = i - window / 2; j < i + window / 2; j++) {
+        if (data[Math.trunc(j)] !== null && j >= 0 && j < data.length) { // keep valid bound results
+          sum = sum + (Number(data[Math.trunc(j)]));
+          count++;
+        }
+      }
+      if (count > 0) { // assign average or null when no average could be found
+        results.push(sum / count);
+      } else {
+        results.push(null);
+      }
+    }
+    return results;
   }
 
   /** Adds state to active state list w/ id. Fetches state's data as well */
