@@ -1,22 +1,19 @@
 "use client";
-import { useState, useRef, ReactElement } from "react";
+import { useState, ReactElement } from "react";
+import { Dropdown, Button, StrikeThroughConditional } from "./components";
 
 import { LineChart } from "@mui/x-charts";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
-import InputLabel from "@mui/material/InputLabel";
+import { SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
 
 import { State, datum, fetchState } from "../parser";
 
 // TODO:
-// change useref() to setState()
 // make sepperate components folder
-// add more null checking and remove typecasting
 // use https://www.npmjs.com/package/tailwind-merge tailwind merge for conditional css
 
 export default function Dashboard() {
-  const nextId = useRef(0); // Id to assign any newly made state
+  const [nextId, setNextId] = useState<number>(0); // Id for state component key
   const [states, setStates] = useState<State[]>([]); // React state to store list of rendered State components
 
   // List and Display List of metrics in order, except date and state (always required for rendering)
@@ -146,7 +143,7 @@ export default function Dashboard() {
                           props.state.nullMetrics &&
                           props.state.nullMetrics[
                             metric as keyof typeof props.state.nullMetrics
-                          ] //this is a bug
+                          ]
                         )
                       }
                       text={metricPretty}
@@ -169,10 +166,7 @@ export default function Dashboard() {
             {abbrevMap.get(props.state.abbrev)}
           </h2>
           <div className="flex w-1/3 flex-row flex-nowrap justify-end px-2">
-            <Button
-              onClick={() => ascendState(props.state)}
-              buttonText="UP"
-            />
+            <Button onClick={() => ascendState(props.state)} buttonText="UP" />
             <Button
               onClick={() => descendState(props.state)}
               buttonText="DOWN"
@@ -205,19 +199,14 @@ export default function Dashboard() {
                 .map(
                   // itterates for metrics:
                   (metric) => ({
-                    label:
-                      props.state.selectedMetrics?.get(metric as keyof datum) ??
-                      "",
+                    label: props.state.selectedMetrics?.get(metric) ?? "",
                     data:
                       props.state.data
-                        ?.map(
-                          (data) =>
-                            data[metric as keyof datum] as number | null,
-                        ) // returns data value for corresponding metric
+                        ?.map((data) => data[metric] as number | null) // returns data value for corresponding metric
                         .reverse() ?? [], // reverse to be in ascending date order
                   }),
                 ) ?? []),
-                // Generates array of sequential rolling 7 day avg values for each metric w/ label
+              // Generates array of sequential rolling 7 day avg values for each metric w/ label
               ...(props.state
                 .selectedMetrics!.keys()
                 .toArray()
@@ -225,14 +214,10 @@ export default function Dashboard() {
                   // itterates for metrics:
                   (metric) => ({
                     label:
-                      props.state.selectedMetrics?.get(metric as keyof datum) +
-                      " 7-day avg",
+                      props.state.selectedMetrics?.get(metric) + " 7-day avg",
                     data: calculateRollingAverage(
                       props.state.data
-                        ?.map(
-                          (data) =>
-                            data[metric as keyof datum] as number | null,
-                        ) // returns data value for corresponding metric
+                        ?.map((data) => data[metric] as number | null) // returns data value for corresponding metric
                         .reverse() ?? [], // reverse to be in ascending date order
                       7,
                     ),
@@ -242,54 +227,6 @@ export default function Dashboard() {
             height={300}
           />
         </div>
-      </div>
-    );
-  }
-
-  interface StateButtonProps {
-    onClick?: () => void;
-    buttonText?: string;
-    type?: "button" | "submit" | "reset";
-  }
-  /** Button Component that displays a button with callback function for press. */
-  function Button(props: StateButtonProps): ReactElement {
-    return (
-      <button
-        className="border-accent-border bg-accent text-text-contrast hover:bg-accent-hover hover:border-accent-border-hover m-2 self-center rounded-md border-3 px-3"
-        onClick={props.onClick}
-        type={props.type}
-      >
-        {props.buttonText}
-      </button>
-    );
-  }
-
-  interface DropDownProps {
-    items: React.ReactNode[]; // of the form [<MenuItem value={}>...</MenuItem>...]
-    selected: string[];
-    onChange: (e: SelectChangeEvent<string[]>) => void;
-  }
-  /** Dropdown component to select which metrics of data to display */
-  function Dropdown(props: DropDownProps): ReactElement {
-    return (
-      <div className="border-tertiary-border bg-tertiary m-2 rounded-md">
-        <FormControl fullWidth>
-          <InputLabel
-            className="bg-tertiary rounded-md"
-            id="demo-simple-select-label"
-          >
-            <div className="text-text-contrast px-2 text-xl">Metrics</div>
-          </InputLabel>
-          <Select
-            labelId="demo-simple-select-label"
-            id="demo-simple-select"
-            multiple
-            value={props.selected}
-            onChange={props.onChange}
-          >
-            {props.items}
-          </Select>
-        </FormControl>
       </div>
     );
   }
@@ -315,23 +252,6 @@ export default function Dashboard() {
     newStates[sIndex].selectedMetrics = newMetrics;
 
     setStates(newStates);
-  }
-
-  interface StrikeThroughConditionalProps {
-    condition?: boolean;
-    text?: string;
-  }
-  /** Component that adds strikethrough to the provided text if condition is true, otherwise returns text */
-  function StrikeThroughConditional(
-    props: StrikeThroughConditionalProps,
-  ): ReactElement {
-    if (props.condition) {
-      return (
-        <p className="inline text-xl font-medium line-through">{props.text}</p>
-      );
-    } else {
-      return <p className="inline text-xl font-medium">{props.text}</p>;
-    }
   }
 
   /** Takes in array of values and window size (ex. 7). Returns populated array of window sized rolling averages  */
@@ -373,10 +293,11 @@ export default function Dashboard() {
       ...states,
       {
         ...s,
-        id: nextId.current++,
+        id: nextId,
         selectedMetrics: new Map<keyof datum, string>([]),
       },
     ]);
+    setNextId((prevId) => ++prevId);
   }
 
   /** Removes active state from state list */
@@ -412,7 +333,8 @@ export default function Dashboard() {
   function handleSubmit(e: React.FormEvent<HTMLFormElement>): void {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const stateAbbrev = (formData.get("stateAbbrev") as string).toUpperCase();
+    const stateAbbrev =
+      formData.get("stateAbbrev")?.toString().toUpperCase() ?? "";
 
     if (abbrevMap.has(stateAbbrev)) {
       addState({ abbrev: stateAbbrev });
@@ -436,7 +358,7 @@ export default function Dashboard() {
               placeholder="e.g. NY"
               autoCapitalize="characters"
             ></input>
-            <Button type="submit" buttonText="ADD STATE"/>
+            <Button type="submit" buttonText="ADD STATE" />
           </form>
         </div>
       </div>
