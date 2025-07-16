@@ -9,7 +9,6 @@ import MenuItem from "@mui/material/MenuItem";
 import { State, datum, fetchState } from "../parser";
 
 // TODO:
-// make sepperate components folder
 // use https://www.npmjs.com/package/tailwind-merge tailwind merge for conditional css
 
 export default function Dashboard() {
