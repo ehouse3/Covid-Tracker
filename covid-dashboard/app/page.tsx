@@ -9,16 +9,115 @@ import FormControl from "@mui/material/FormControl";
 
 import { State, datum, fetchState } from "../parser";
 
+// TODO:
+// change useref() to setState()
+// make sepperate components folder
+// add more null checking and remove typecasting
+// use https://www.npmjs.com/package/tailwind-merge tailwind merge for conditional css
+
 export default function Dashboard() {
   const nextId = useRef(0); // Id to assign any newly made state
   const [states, setStates] = useState<State[]>([]); // React state to store list of rendered State components
 
   // List and Display List of metrics in order, except date and state (always required for rendering)
-  const metricList: (keyof datum)[] = ["death", "deathConfirmed", "deathIncrease", "deathProbable", "hospitalized", "hospitalizedCumulative", "hospitalizedCurrently", "hospitalizedIncrease", "inIcuCumulative", "inIcuCurrently", "negative", "negativeIncrease", "negativeTestsAntibody", "negativeTestsPeopleAntibody", "negativeTestsViral", "onVentilatorCumulative", "onVentilatorCurrently", "positive", "positiveCasesViral", "positiveIncrease", "positiveScore", "positiveTestsAntibody", "positiveTestsAntigen", "positiveTestsPeopleAntibody", "positiveTestsPeopleAntigen", "positiveTestsViral", "recovered", "totalTestEncountersViral", "totalTestEncountersViralIncrease", "totalTestResults", "totalTestResultsIncrease", "totalTestsAntibody", "totalTestsAntigen", "totalTestsPeopleAntibody", "totalTestsPeopleAntigen", "totalTestsPeopleViral", "totalTestsPeopleViralIncrease", "totalTestsViral", "totalTestsViralIncrease"];
-  const metricListPretty: string[] = ["Deaths", "Confirmed Deaths", "Increased Deaths", "Probable Deaths", "Hospitalizations", "Cumulative Hospitalizations", "Currently Hospitalized", "Increase Hospitalizations", "Cumulative in ICU", "Currently in ICU ", "Negatives", "Increase Negatives", "Negative Antibody Tests", "Negative Antibody Tests People", "Negative Viral Tests", "Cumulativly on Ventilator", "Currently on Ventilator", "Positive", "Positive Viral Cases", "Positive Increase", "Positive Score", "Positive Tests Antibody", "Positive Antigen Tests", "Positive Antibody Tests People", "Positive Antigen Tests Peopel", "Positive Viral Tests", "Recovered", "Total Viral Test Encounters", "Total Viral Test Encounters Increase", "Total Test Results", "Total Test Results Increase", "Total Antibody Tests", "Total Antigen Tests", "Total Antibody Tests People ", "Total Antigen Tests People", "Total Viral Tests People ", "Total Increase Viral Tests People", "Total Viral Tests", "Total Increase Viral Tests"];
+  const metricsMap = new Map<keyof datum, string>([
+    ["death", "Deaths"],
+    ["deathConfirmed", "Confirmed Deaths"],
+    ["deathIncrease", "Increased Deaths"],
+    ["deathProbable", "Probable Deaths"],
+    ["hospitalized", "Hospitalizations"],
+    ["hospitalizedCumulative", "Cumulative Hospitalizations"],
+    ["hospitalizedCurrently", "Currently Hospitalized"],
+    ["hospitalizedIncrease", "Increase Hospitalizations"],
+    ["inIcuCumulative", "Cumulative in ICU"],
+    ["inIcuCurrently", "Currently in ICU "],
+    ["negative", "Negatives"],
+    ["negativeIncrease", "Increase Negatives"],
+    ["negativeTestsAntibody", "Negative Antibody Tests"],
+    ["negativeTestsPeopleAntibody", "Negative Antibody Tests People"],
+    ["negativeTestsViral", "Negative Viral Tests"],
+    ["onVentilatorCumulative", "Cumulativly on Ventilator"],
+    ["onVentilatorCurrently", "Currently on Ventilator"],
+    ["positive", "Positive"],
+    ["positiveCasesViral", "Positive Viral Cases"],
+    ["positiveIncrease", "Positive Increase"],
+    ["positiveScore", "Positive Score"],
+    ["positiveTestsAntibody", "Positive Tests Antibody"],
+    ["positiveTestsAntigen", "Positive Antigen Tests"],
+    ["positiveTestsPeopleAntibody", "Positive Antibody Tests People"],
+    ["positiveTestsPeopleAntigen", "Positive Antigen Tests Peopel"],
+    ["positiveTestsViral", "Positive Viral Tests"],
+    ["recovered", "Recovered"],
+    ["totalTestEncountersViral", "Total Viral Test Encounters"],
+    [
+      "totalTestEncountersViralIncrease",
+      "Total Viral Test Encounters Increase",
+    ],
+    ["totalTestResults", "Total Test Results"],
+    ["totalTestResultsIncrease", "Total Test Results Increase"],
+    ["totalTestsAntibody", "Total Antibody Tests"],
+    ["totalTestsAntigen", "Total Antigen Tests"],
+    ["totalTestsPeopleAntibody", "Total Antibody Tests People "],
+    ["totalTestsPeopleAntigen", "Total Antigen Tests People"],
+    ["totalTestsPeopleViral", "Total Viral Tests People "],
+    ["totalTestsPeopleViralIncrease", "Total Increase Viral Tests People"],
+    ["totalTestsViral", "Total Viral Tests"],
+    ["totalTestsViralIncrease", "Total Increase Viral Tests"],
+  ]);
 
   // Map of state's abbreviations to state's fullname
-  const abbrevMap = new Map<string, string>([["AL", "Alabama"], ["AK", "Alaska"], ["AZ", "Arizona"], ["AR", "Arkansas"], ["CA", "California"], ["CO", "Colorado"], ["CT", "Connecticut"], ["DE", "Delaware"], ["FL", "Florida"], ["GA", "Georgia"], ["HI", "Hawaii"], ["ID", "Idaho"], ["IL", "Illinois"], ["IN", "Indiana"], ["IA", "Iowa"], ["KS", "Kansas"], ["KY", "Kentucky"], ["LA", "Louisiana"], ["ME", "Maine"], ["MD", "Maryland"], ["MA", "Massachusetts"], ["MI", "Michigan"], ["MN", "Minnesota"], ["MS", "Mississippi"], ["MO", "Missouri"], ["MT", "Montana"], ["NE", "Nebraska"], ["NV", "Nevada"], ["NH", "New Hampshire"], ["NJ", "New Jersey"], ["NM", "New Mexico"], ["NY", "New York"], ["NC", "North Carolina"], ["ND", "North Dakota"], ["OH", "Ohio"], ["OK", "Oklahoma"], ["OR", "Oregon"], ["PA", "Pennsylvania"], ["RI", "Rhode Island"], ["SC", "South Carolina"], ["SD", "South Dakota"], ["TN", "Tennessee"], ["TX", "Texas"], ["UT", "Utah"], ["VT", "Vermont"], ["VA", "Virginia"], ["WA", "Washington"], ["WV", "West Virginia"], ["WI", "Wisconsin"], ["WY", "Wyoming"],]);
+  const abbrevMap = new Map<string, string>([
+    ["AL", "Alabama"],
+    ["AK", "Alaska"],
+    ["AZ", "Arizona"],
+    ["AR", "Arkansas"],
+    ["CA", "California"],
+    ["CO", "Colorado"],
+    ["CT", "Connecticut"],
+    ["DE", "Delaware"],
+    ["FL", "Florida"],
+    ["GA", "Georgia"],
+    ["HI", "Hawaii"],
+    ["ID", "Idaho"],
+    ["IL", "Illinois"],
+    ["IN", "Indiana"],
+    ["IA", "Iowa"],
+    ["KS", "Kansas"],
+    ["KY", "Kentucky"],
+    ["LA", "Louisiana"],
+    ["ME", "Maine"],
+    ["MD", "Maryland"],
+    ["MA", "Massachusetts"],
+    ["MI", "Michigan"],
+    ["MN", "Minnesota"],
+    ["MS", "Mississippi"],
+    ["MO", "Missouri"],
+    ["MT", "Montana"],
+    ["NE", "Nebraska"],
+    ["NV", "Nevada"],
+    ["NH", "New Hampshire"],
+    ["NJ", "New Jersey"],
+    ["NM", "New Mexico"],
+    ["NY", "New York"],
+    ["NC", "North Carolina"],
+    ["ND", "North Dakota"],
+    ["OH", "Ohio"],
+    ["OK", "Oklahoma"],
+    ["OR", "Oregon"],
+    ["PA", "Pennsylvania"],
+    ["RI", "Rhode Island"],
+    ["SC", "South Carolina"],
+    ["SD", "South Dakota"],
+    ["TN", "Tennessee"],
+    ["TX", "Texas"],
+    ["UT", "Utah"],
+    ["VT", "Vermont"],
+    ["VA", "Virginia"],
+    ["WA", "Washington"],
+    ["WV", "West Virginia"],
+    ["WI", "Wisconsin"],
+    ["WY", "Wyoming"],
+  ]);
 
   interface StateItemProps {
     state: State;
@@ -36,9 +135,10 @@ export default function Dashboard() {
         <div className="flex w-full flex-row">
           <div className="w-1/3">
             <Dropdown
-              items={metricList.map((metric, index) => {
-                return (
-                  // List of metrics to choose
+              items={metricsMap
+                .entries()
+                .toArray()
+                .map(([metric, metricPretty]: [keyof datum, string]) => (
                   <MenuItem value={metric} key={metric}>
                     <StrikeThroughConditional
                       condition={
@@ -46,22 +146,24 @@ export default function Dashboard() {
                           props.state.nullMetrics &&
                           props.state.nullMetrics[
                             metric as keyof typeof props.state.nullMetrics
-                          ]
+                          ] //this is a bug
                         )
                       }
-                      text={metricListPretty[index]}
-                    ></StrikeThroughConditional>
+                      text={metricPretty}
+                    />
                   </MenuItem>
-                );
-              })}
-              selected={props.state.selected?.metric as string[]}
+                ))}
+              selected={
+                (props.state.selectedMetrics?.keys().toArray() ??
+                  []) as string[]
+              }
               onChange={(e) => {
                 handleMetricDropdownChange(
                   e as SelectChangeEvent<(keyof datum)[]>,
                   props.state,
                 );
               }}
-            ></Dropdown>
+            />
           </div>
           <h2 className="flex w-1/3 flex-row flex-nowrap justify-center self-center text-5xl font-bold">
             {abbrevMap.get(props.state.abbrev)}
@@ -70,15 +172,15 @@ export default function Dashboard() {
             <Button
               onClick={() => ascendState(props.state)}
               buttonText="UP"
-            ></Button>
+            />
             <Button
               onClick={() => descendState(props.state)}
               buttonText="DOWN"
-            ></Button>
+            />
             <Button
               onClick={() => removeState(props.state)}
               buttonText="DELETE"
-            ></Button>
+            />
           </div>
         </div>
 
@@ -96,39 +198,49 @@ export default function Dashboard() {
               },
             ]}
             series={[
-              // Generates values for each metric w/ label
-              ...props.state.selected!.metric.map(
-                (
-                  metric,
-                  index, // Generate each metric's data
-                ) => ({
-                  label: props.state.selected!.prettyMetric[index],
-                  data:
-                    props.state.data
-                      ?.map((data) => data[metric] as number | null)
-                      .reverse() ?? [],
-                }),
-              ),
-              ...props.state.selected!.metric.map(
-                (
-                  metric,
-                  index, // Generate each metric's rolling average values
-                ) => ({
-                  label:
-                    props.state.selected!.prettyMetric[index] + " 7-day avg",
-                  data: calculateRollingAverage(
-                    props.state.data
-                      ?.map((data) => data[metric] as number | null)
-                      .reverse() ?? [],
-                    7,
-                  ),
-                  // color: "#8884d8",
-                  // style: { strokeDasharray: "4 2" },
-                }),
-              ),
+              // Generates array of sequential values for each metric w/ label
+              ...(props.state
+                .selectedMetrics!.keys()
+                .toArray()
+                .map(
+                  // itterates for metrics:
+                  (metric) => ({
+                    label:
+                      props.state.selectedMetrics?.get(metric as keyof datum) ??
+                      "",
+                    data:
+                      props.state.data
+                        ?.map(
+                          (data) =>
+                            data[metric as keyof datum] as number | null,
+                        ) // returns data value for corresponding metric
+                        .reverse() ?? [], // reverse to be in ascending date order
+                  }),
+                ) ?? []),
+                // Generates array of sequential rolling 7 day avg values for each metric w/ label
+              ...(props.state
+                .selectedMetrics!.keys()
+                .toArray()
+                .map(
+                  // itterates for metrics:
+                  (metric) => ({
+                    label:
+                      props.state.selectedMetrics?.get(metric as keyof datum) +
+                      " 7-day avg",
+                    data: calculateRollingAverage(
+                      props.state.data
+                        ?.map(
+                          (data) =>
+                            data[metric as keyof datum] as number | null,
+                        ) // returns data value for corresponding metric
+                        .reverse() ?? [], // reverse to be in ascending date order
+                      7,
+                    ),
+                  }),
+                ) ?? []),
             ]}
             height={300}
-          ></LineChart>
+          />
         </div>
       </div>
     );
@@ -191,20 +303,16 @@ export default function Dashboard() {
     const sIndex = states.findIndex((st) => st.id === s.id);
     const newStates = [...states];
 
-    if (newStates[sIndex].selected === undefined) {
+    if (newStates[sIndex].selectedMetrics === undefined) {
       return;
     }
 
-    // Assigning new selected metrics and prettyMetrics
-    newStates[sIndex].selected.metric = metrics;
-    metrics.forEach((metric, i) => {
-      // set selected.prettyMetric using index of selected.metric
-      const dataIndex = metricList.findIndex((m) => m === metric);
-      if (newStates[sIndex].selected === undefined) {
-        return;
-      }
-      newStates[sIndex].selected.prettyMetric[i] = metricListPretty[dataIndex];
+    // Assigning selectedMetrics for corresponding state
+    const newMetrics = new Map<keyof datum, string>([]);
+    metrics.forEach((metric) => {
+      newMetrics.set(metric, metricsMap.get(metric) ?? "");
     });
+    newStates[sIndex].selectedMetrics = newMetrics;
 
     setStates(newStates);
   }
@@ -252,7 +360,7 @@ export default function Dashboard() {
     return results;
   }
 
-  /** Adds state to active state list w/ id. Fetches state's data as well */
+  /** Adds state to active state list w/ id. Fetches state's data. Initializes selectedMetrics map */
   async function addState(s: State): Promise<void> {
     if (states.length > 6) {
       return;
@@ -266,7 +374,7 @@ export default function Dashboard() {
       {
         ...s,
         id: nextId.current++,
-        selected: { metric: [], prettyMetric: [] },
+        selectedMetrics: new Map<keyof datum, string>([]),
       },
     ]);
   }
@@ -300,14 +408,13 @@ export default function Dashboard() {
     }
   }
 
-  const acceptStates = ["AK", "AL", "AR", "AS", "AZ", "CA", "CO", "CT", "DC", "DE", "FL", "GA", "GU", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA", "MA", "MD", "ME", "MI", "MN", "MO", "MP", "MS", "MT", "NC", "ND", "NE", "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "PR", "RI", "SC", "SD", "TN", "TX", "UT", "VA", "VI", "VT", "WA", "WI", "WV", "WY"];
   /** Handles submit event, calling addState if appropriate */
   function handleSubmit(e: React.FormEvent<HTMLFormElement>): void {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const stateAbbrev = (formData.get("stateAbbrev") as string).toUpperCase();
 
-    if (acceptStates.includes(stateAbbrev)) {
+    if (abbrevMap.has(stateAbbrev)) {
       addState({ abbrev: stateAbbrev });
     }
   }
@@ -329,7 +436,7 @@ export default function Dashboard() {
               placeholder="e.g. NY"
               autoCapitalize="characters"
             ></input>
-            <Button type="submit" buttonText="ADD STATE"></Button>
+            <Button type="submit" buttonText="ADD STATE"/>
           </form>
         </div>
       </div>
@@ -342,7 +449,7 @@ export default function Dashboard() {
               ascendState={ascendState}
               descendState={descendState}
               removeState={removeState}
-            ></StateItem>
+            />
           ),
       )}
     </main>

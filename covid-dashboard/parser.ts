@@ -136,7 +136,8 @@ export interface State {
     id?: number, //unique
     abbrev: string,
     data?: datum[], // array of state's data from csv
-    selected?: { metric: (keyof datum)[], prettyMetric: string[] } // Selected data metrics and pretty metrics
+    // selected?: { metric: (keyof datum)[], prettyMetric: string[] } // Selected data metrics and pretty metrics
+    selectedMetrics?: Map<keyof datum, string>, // mep of selected metrics to pretty metrics pairs
     nullMetrics?: nullMetrics, // property is true if all of that metric's values is Null, false otherwise
 }
 
