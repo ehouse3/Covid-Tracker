@@ -101,14 +101,15 @@ function fetchState(s) {
                     console.log("Parser.ts returning data for: ", s.abbrev);
                     // keeps requested state values; nullyfing, and assigning nullMetrics, while it itterates
                     s = __assign(__assign({}, s), { data: [], nullMetrics: negativeNullMetrics });
-                    return [4 /*yield*/, fetch('data/all-states-history.csv')
+                    return [4 /*yield*/, fetch("data/all-states-history.csv")
                             .then(function (response) { return response.text(); })
                             .then(function (csvText) {
                             Papa.parse(csvText, {
                                 header: true,
                                 complete: function (results) {
                                     var _a;
-                                    for (var i = 0; i < results.data.length; i++) { // TODO Coalesce other requests from page.tsx
+                                    for (var i = 0; i < results.data.length; i++) {
+                                        // TODO Coalesce other requests from page.tsx
                                         if (results.data[i].state === s.abbrev) {
                                             var datum = nullifyEmptyMetrics(results.data[i]);
                                             s.nullMetrics = setNullMetrics(datum, s);

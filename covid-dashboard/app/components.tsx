@@ -1,3 +1,5 @@
+/* Components.tsx file. This file contains components for the covid dashboard react file **/
+
 import { ReactElement } from "react";
 import { State, datum } from "../parser";
 
@@ -6,6 +8,8 @@ import Select, { SelectChangeEvent } from "@mui/material/Select";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
+
+import { twMerge } from "tailwind-merge";
 
 interface StateItemProps {
   state: State;
@@ -24,9 +28,7 @@ interface StateItemProps {
 /** Component for a single state. Includes Name, metric selector, movement buttons and graph */
 export function StateItem(props: StateItemProps): ReactElement {
   return (
-    <div
-      className="bg-foreground border-foreground-border my-7 flex flex-row flex-wrap justify-between rounded-xl border-0 p-2"
-    >
+    <div className="bg-foreground border-foreground-border my-7 flex flex-row flex-wrap justify-between rounded-xl border-0 p-2">
       <div className="flex w-full flex-row">
         <div className="w-1/3">
           <Dropdown
@@ -35,17 +37,20 @@ export function StateItem(props: StateItemProps): ReactElement {
               .toArray()
               .map(([metric, metricPretty]: [keyof datum, string]) => (
                 <MenuItem value={metric} key={metric}>
-                  <StrikeThroughConditional
-                    condition={
-                      !(
-                        props.state.nullMetrics &&
+                  <p
+                    className={twMerge(
+                      // adds css strike-through for metrics containing all null values
+                      "inline text-xl font-medium",
+                      props.state.nullMetrics &&
                         props.state.nullMetrics[
                           metric as keyof typeof props.state.nullMetrics
                         ]
-                      )
-                    }
-                    text={metricPretty}
-                  />
+                        ? ""
+                        : "line-through",
+                    )}
+                  >
+                    {metricPretty}
+                  </p>
                 </MenuItem>
               ))}
             selected={
@@ -78,12 +83,12 @@ export function StateItem(props: StateItemProps): ReactElement {
             },
           ]}
           series={[
-            // Generates array of sequential values for each metric w/ label
-            ...(props.state
-              .selectedMetrics!.keys()
+            // Generates array of sequential values for each selected metric w/ label
+            ...(props.state.selectedMetrics
+              ?.keys()
               .toArray()
               .map(
-                // itterates for metrics:
+                // itterates through selectedMetrics:
                 (metric) => ({
                   label: props.state.selectedMetrics?.get(metric) ?? "",
                   data:
@@ -92,12 +97,12 @@ export function StateItem(props: StateItemProps): ReactElement {
                       .reverse() ?? [], // reverse to be in ascending date order
                 }),
               ) ?? []),
-            // Generates array of sequential rolling 7 day avg values for each metric w/ label
+            // Generates array of sequential rolling 7 day avg values for each selected metric w/ label
             ...(props.state
               .selectedMetrics!.keys()
               .toArray()
               .map(
-                // itterates for metrics:
+                // itterates through selectedMetrics:
                 (metric) => ({
                   label:
                     props.state.selectedMetrics?.get(metric) + " 7-day avg",
@@ -163,21 +168,4 @@ export function Button(props: StateButtonProps): ReactElement {
       {props.buttonText}
     </button>
   );
-}
-
-interface StrikeThroughConditionalProps {
-  condition?: boolean;
-  text?: string;
-}
-/** Component that adds strikethrough to the provided text if condition is true, otherwise returns text */
-export function StrikeThroughConditional(
-  props: StrikeThroughConditionalProps,
-): ReactElement {
-  if (props.condition) {
-    return (
-      <p className="inline text-xl font-medium line-through">{props.text}</p>
-    );
-  } else {
-    return <p className="inline text-xl font-medium">{props.text}</p>;
-  }
 }

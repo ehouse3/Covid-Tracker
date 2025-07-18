@@ -1,3 +1,6 @@
+/* Euan House, July 2025, Covid Dashboard **/
+/* Main Dashboard react page **/
+
 "use client";
 import { useState } from "react";
 import { Button, StateItem } from "./components";
@@ -5,9 +8,6 @@ import { Button, StateItem } from "./components";
 import { SelectChangeEvent } from "@mui/material/Select";
 
 import { State, datum, fetchState } from "../parser";
-
-// TODO:
-// use https://www.npmjs.com/package/tailwind-merge tailwind merge for conditional css
 
 // List and Display List of metrics in order, except date and state (always required for rendering)
 const metricsMap = new Map<keyof datum, string>([
@@ -110,6 +110,55 @@ export default function Dashboard() {
   const [nextId, setNextId] = useState<number>(0); // Id for state component key
   const [states, setStates] = useState<State[]>([]); // React state to store list of rendered State components
 
+  /** Adds state to active state list w/ id. Fetches state's data. Initializes selectedMetrics map */
+  async function addState(s: State): Promise<void> {
+    if (states.length > 6) {
+      return;
+    }
+
+    s = await fetchState(s);
+    console.log("page.tsx fetch state returned: ", s);
+
+    setStates([
+      ...states,
+      {
+        ...s,
+        id: nextId,
+        selectedMetrics: new Map<keyof datum, string>([]), // initializing empty selectedMetrics Map to be appended later
+      },
+    ]);
+    setNextId((prevId) => ++prevId);
+  }
+
+  /** Removes active state from state list */
+  function removeState(s: State): void {
+    setStates(states.filter((st) => st.id !== s.id));
+  }
+
+  /** Moves displayed state up one position */
+  function ascendState(s: State): void {
+    const index = states.findIndex((st) => st.id === s.id);
+    if (index !== 0) {
+      const newStates = [...states];
+      const temp: State = newStates[index];
+      newStates[index] = newStates[index - 1];
+      newStates[index - 1] = temp;
+      setStates(newStates);
+    }
+  }
+
+  /** Moves displayed state down one position */
+  function descendState(s: State): void {
+    const index = states.findIndex((st) => st.id === s.id);
+    if (index < states.length - 1) {
+      const newStates = [...states];
+      const temp: State = newStates[index];
+      newStates[index] = newStates[index + 1];
+      newStates[index + 1] = temp;
+      setStates(newStates);
+    }
+  }
+
   /** Handles onChange for MetricDropDownComponent. Updates the corresponding state's selected metrics */
   function handleMetricDropdownChange(
     e: SelectChangeEvent<(keyof datum)[]>,
@@ -143,13 +192,14 @@ export default function Dashboard() {
       let sum: number = 0;
       let count: number = 0;
       for (let j = i - window / 2; j < i + window / 2; j++) {
+        // calculates individual rolling average. Between +-window/2
         if (data[Math.trunc(j)] !== null && j >= 0 && j < data.length) {
           // keep valid bound results
           sum = sum + Number(data[Math.trunc(j)]);
           count++;
         }
       }
-      if (count > 0) {
+      if (count !== 0) {
         // assign average or null when no average could be found
         results.push(sum / count);
       } else {
@@ -157,55 +207,6 @@ export default function Dashboard() {
       }
     }
     return results;
-  }
-
-  /** Adds state to active state list w/ id. Fetches state's data. Initializes selectedMetrics map */
-  async function addState(s: State): Promise<void> {
-    if (states.length > 6) {
-      return;
-    }
-
-    s = await fetchState(s);
-    console.log("page.tsx fetch state returned: ", s);
-
-    setStates([
-      ...states,
-      {
-        ...s,
-        id: nextId,
-        selectedMetrics: new Map<keyof datum, string>([]),
-      },
-    ]);
-    setNextId((prevId) => ++prevId);
-  }
-
-  /** Removes active state from state list */
-  function removeState(s: State): void {
-    setStates(states.filter((st) => st.id !== s.id));
-  }
-
-  /** Moves displayed state up one position */
-  function ascendState(s: State): void {
-    const index = states.findIndex((st) => st.id === s.id);
-    if (index !== 0) {
-      const newStates = [...states];
-      const temp: State = newStates[index];
-      newStates[index] = newStates[index - 1];
-      newStates[index - 1] = temp;
-      setStates(newStates);
-    }
-  }
-
-  /** Moves displayed state down one position */
-  function descendState(s: State): void {
-    const index = states.findIndex((st) => st.id === s.id);
-    if (index < states.length - 1) {
-      const newStates = [...states];
-      const temp: State = newStates[index];
-      newStates[index] = newStates[index + 1];
-      newStates[index + 1] = temp;
-      setStates(newStates);
-    }
   }
 
   /** Handles submit event for adding new state button, calling addState if appropriate */
@@ -246,11 +247,9 @@ export default function Dashboard() {
           state.id !== undefined && (
             <StateItem
               key={state.id}
-
               state={state}
               abbrevMap={abbrevMap}
               metricsMap={metricsMap}
-
               ascendState={() => ascendState(state)}
               descendState={() => descendState(state)}
               removeState={() => removeState(state)}
