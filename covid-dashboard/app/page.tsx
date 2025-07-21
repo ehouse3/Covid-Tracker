@@ -233,7 +233,7 @@ export default function Dashboard() {
           <form onSubmit={handleSubmit}>
             <input
               name="stateAbbrev"
-              className="text-text-contrast bg-tertiary m-1 rounded-md px-2"
+              className="text-text-contrast bg-text m-1 rounded-md px-2"
               type="text"
               placeholder="e.g. NY"
               autoCapitalize="characters"

@@ -130,10 +130,10 @@ interface DropDownProps {
 /** Dropdown component to select which metrics of data to display */
 export function Dropdown(props: DropDownProps): ReactElement {
   return (
-    <div className="border-tertiary-border bg-tertiary m-2 rounded-md">
+    <div className="border-tertiary-border bg-text m-2 rounded-md">
       <FormControl fullWidth>
         <InputLabel
-          className="bg-tertiary rounded-md"
+          className="bg-text rounded-md"
           id="demo-simple-select-label"
         >
           <div className="text-text-contrast px-2 text-xl">Metrics</div>
