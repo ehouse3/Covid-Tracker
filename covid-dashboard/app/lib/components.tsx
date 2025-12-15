@@ -1,7 +1,7 @@
 /* Components.tsx file. This file contains components for the covid dashboard react file **/
 
 import { ReactElement } from "react";
-import { State, datum } from "../parser";
+import { State, datum } from "./types";
 
 import { LineChart } from "@mui/x-charts";
 import Select, { SelectChangeEvent } from "@mui/material/Select";

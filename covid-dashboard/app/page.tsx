@@ -3,108 +3,13 @@
 
 "use client";
 import { useState } from "react";
-import { Button, StateItem } from "./components";
+import { Button, StateItem } from "./lib/components";
 
 import { SelectChangeEvent } from "@mui/material/Select";
 
-import { State, datum, fetchState } from "../parser";
+import { fetchState } from "../parser";
 
-// List and Display List of metrics in order, except date and state (always required for rendering)
-const metricsMap = new Map<keyof datum, string>([
-  ["death", "Deaths"],
-  ["deathConfirmed", "Confirmed Deaths"],
-  ["deathIncrease", "Increased Deaths"],
-  ["deathProbable", "Probable Deaths"],
-  ["hospitalized", "Hospitalizations"],
-  ["hospitalizedCumulative", "Cumulative Hospitalizations"],
-  ["hospitalizedCurrently", "Currently Hospitalized"],
-  ["hospitalizedIncrease", "Increase Hospitalizations"],
-  ["inIcuCumulative", "Cumulative in ICU"],
-  ["inIcuCurrently", "Currently in ICU "],
-  ["negative", "Negatives"],
-  ["negativeIncrease", "Increase Negatives"],
-  ["negativeTestsAntibody", "Negative Antibody Tests"],
-  ["negativeTestsPeopleAntibody", "Negative Antibody Tests People"],
-  ["negativeTestsViral", "Negative Viral Tests"],
-  ["onVentilatorCumulative", "Cumulativly on Ventilator"],
-  ["onVentilatorCurrently", "Currently on Ventilator"],
-  ["positive", "Positive"],
-  ["positiveCasesViral", "Positive Viral Cases"],
-  ["positiveIncrease", "Positive Increase"],
-  ["positiveScore", "Positive Score"],
-  ["positiveTestsAntibody", "Positive Tests Antibody"],
-  ["positiveTestsAntigen", "Positive Antigen Tests"],
-  ["positiveTestsPeopleAntibody", "Positive Antibody Tests People"],
-  ["positiveTestsPeopleAntigen", "Positive Antigen Tests Peopel"],
-  ["positiveTestsViral", "Positive Viral Tests"],
-  ["recovered", "Recovered"],
-  ["totalTestEncountersViral", "Total Viral Test Encounters"],
-  ["totalTestEncountersViralIncrease", "Total Viral Test Encounters Increase"],
-  ["totalTestResults", "Total Test Results"],
-  ["totalTestResultsIncrease", "Total Test Results Increase"],
-  ["totalTestsAntibody", "Total Antibody Tests"],
-  ["totalTestsAntigen", "Total Antigen Tests"],
-  ["totalTestsPeopleAntibody", "Total Antibody Tests People "],
-  ["totalTestsPeopleAntigen", "Total Antigen Tests People"],
-  ["totalTestsPeopleViral", "Total Viral Tests People "],
-  ["totalTestsPeopleViralIncrease", "Total Increase Viral Tests People"],
-  ["totalTestsViral", "Total Viral Tests"],
-  ["totalTestsViralIncrease", "Total Increase Viral Tests"],
-]);
-
-// Map of state's abbreviations to state's fullname
-const abbrevMap = new Map<string, string>([
-  ["AL", "Alabama"],
-  ["AK", "Alaska"],
-  ["AZ", "Arizona"],
-  ["AR", "Arkansas"],
-  ["CA", "California"],
-  ["CO", "Colorado"],
-  ["CT", "Connecticut"],
-  ["DE", "Delaware"],
-  ["FL", "Florida"],
-  ["GA", "Georgia"],
-  ["HI", "Hawaii"],
-  ["ID", "Idaho"],
-  ["IL", "Illinois"],
-  ["IN", "Indiana"],
-  ["IA", "Iowa"],
-  ["KS", "Kansas"],
-  ["KY", "Kentucky"],
-  ["LA", "Louisiana"],
-  ["ME", "Maine"],
-  ["MD", "Maryland"],
-  ["MA", "Massachusetts"],
-  ["MI", "Michigan"],
-  ["MN", "Minnesota"],
-  ["MS", "Mississippi"],
-  ["MO", "Missouri"],
-  ["MT", "Montana"],
-  ["NE", "Nebraska"],
-  ["NV", "Nevada"],
-  ["NH", "New Hampshire"],
-  ["NJ", "New Jersey"],
-  ["NM", "New Mexico"],
-  ["NY", "New York"],
-  ["NC", "North Carolina"],
-  ["ND", "North Dakota"],
-  ["OH", "Ohio"],
-  ["OK", "Oklahoma"],
-  ["OR", "Oregon"],
-  ["PA", "Pennsylvania"],
-  ["RI", "Rhode Island"],
-  ["SC", "South Carolina"],
-  ["SD", "South Dakota"],
-  ["TN", "Tennessee"],
-  ["TX", "Texas"],
-  ["UT", "Utah"],
-  ["VT", "Vermont"],
-  ["VA", "Virginia"],
-  ["WA", "Washington"],
-  ["WV", "West Virginia"],
-  ["WI", "Wisconsin"],
-  ["WY", "Wyoming"],
-]);
+import { State, metricsMap, abbrevMap, datum } from "./lib/types"
 
 export default function Dashboard() {
   const [nextId, setNextId] = useState<number>(0); // Id for state component key
