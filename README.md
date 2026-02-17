@@ -44,3 +44,6 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 - MUI
 - Papaparse
 - twMerge
+
+![CovidTracker](https://github.com/user-attachments/assets/03365fbc-9ea4-4bcb-abfe-8e91b4b2ee99)
+
